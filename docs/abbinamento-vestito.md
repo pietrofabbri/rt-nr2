@@ -26,6 +26,11 @@ Decisioni: [0006](decisioni/0006-colori-del-vestito-gratis-colore-esatto-a-10-eu
 
 Prove del 9/11/2026: da uno screenshot di un negozio con abito verde, ricamo dorato e pulsante arancione escono solo il verde (92%) e l'oro (8%).
 
+## Nomi e scritte metallizzate (9/11/2026)
+
+- Il cliente non vede codici né percentuali: ogni colore ha un nome italiano («verde bottiglia», «rosa cipria»), scelto tra circa 70 nomi con la differenza CIEDE2000; se il colore è lontano dal nome più vicino si aggiunge «chiaro» o «scuro». Il codice esadecimale resta nei campi nascosti dell'ordine, per la bottega.
+- Per la scritta si possono scegliere anche i metallizzati classici a caldo (oro, oro rosa, argento, bronzo), senza costi in più, oltre ai colori del vestito (stampati, colore esatto).
+
 ## Da fare
 
 - **Misurare i colori veri delle copertine** sui campioni (foto con luce di giorno accanto a un cartoncino grigio, o colorimetro) e metterli nel Registro VLC. Oggi sono stimati.

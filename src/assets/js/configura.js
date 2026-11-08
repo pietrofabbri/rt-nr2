@@ -80,7 +80,8 @@
     var hexC = $("hex-copertina").value;
     if (hexC) {
       var base = dati.finiture.filter(function (f) { return f.nome === dati.abbinamento.finitura_base_hex; })[0];
-      return { nome: "Colore esatto " + hexC, prezzo: base.prezzo, colore: hexC, finitura: "Stampata", hex: hexC };
+      var nomeC = $("hex-copertina-nome").value || "colore del vestito";
+      return { nome: nomeC.charAt(0).toUpperCase() + nomeC.slice(1) + " su misura", prezzo: base.prezzo, colore: hexC, finitura: "Stampata", hex: hexC };
     }
     var r = scelto("copertina");
     if (!r) { r = form.querySelector('input[name="copertina"][value="CP-030"]'); r.checked = true; }
@@ -93,8 +94,8 @@
     if (box.hidden) return;
     $("hex-stato-cop").style.background = c.colore;
     $("hex-stato-scr").style.background = hexS || (foilRadio ? foilRadio.dataset.colore : "");
-    $("hex-stato-testo").textContent = "Colore esatto del vestito: copertina " + (c.hex ? c.hex : c.nome) + ", scritta " +
-      (hexS ? "stampata " + hexS : "in " + (foilRadio ? foilRadio.value.toLowerCase() : "oro")) + ". " +
+    $("hex-stato-testo").textContent = "Colore esatto del vestito: copertina " + (c.hex ? c.nome.charAt(0).toLowerCase() + c.nome.slice(1) : c.nome) + ", scritta " +
+      (hexS ? "stampata " + $("hex-scritta-nome").value : "in " + (foilRadio ? foilRadio.value.toLowerCase() : "oro") + " a caldo") + ". " +
       Libro.euro(dati.abbinamento.prezzo_hex) + " in più a copia.";
   }
 
@@ -146,7 +147,7 @@
     $("conto-copia").textContent = Libro.euro(copia);
     $("conto-totale").textContent = Libro.euro(totale);
     $("barra-totale").textContent = Libro.euro(totale);
-    riepilogo.textContent = copie + (copie === 1 ? " copia" : " copie") + " in " + c.nome + (hexS && !c.hex ? " con scritta nel colore esatto" : "") + ", " + facciate + " facciate, " +
+    riepilogo.textContent = copie + (copie === 1 ? " copia" : " copie") + " in " + c.nome + (hexS ? " con scritta " + $("hex-scritta-nome").value + " stampata" : "") + ", " + facciate + " facciate, " +
       (cons.value === "ritiro" ? "ritiro in bottega" : "spedizione compresa") + ": " + Libro.euro(totale) + ".";
   }
 

@@ -72,6 +72,33 @@
     return foil.slice().sort(function (a, b) { return deltaE(l, a.lab) - deltaE(l, b.lab); })[0];
   }
 
+  // ---- Nomi dei colori ------------------------------------------------------
+  // Al cliente si mostrano nomi, non codici: il codice resta nell'ordine per la bottega.
+  var NOMI = [
+    ["bianco", "#F7F7F5"], ["panna", "#F3EBD9"], ["avorio", "#EEE3C8"], ["crema", "#F1E3B5"], ["champagne", "#E6D3A8"],
+    ["beige", "#D9C6A5"], ["sabbia", "#CDB58C"], ["tortora", "#A39382"], ["cammello", "#B5895A"], ["nocciola", "#9C6B43"],
+    ["cognac", "#8E4B22"], ["marrone", "#6B4226"], ["cioccolato", "#4A2C1D"], ["oro antico", "#B8954A"], ["senape", "#C9A227"],
+    ["giallo", "#F2D23C"], ["giallo limone", "#F4EA56"], ["pesca", "#F5B994"], ["albicocca", "#F0A35E"], ["arancione", "#E8742A"],
+    ["corallo", "#F07B6A"], ["salmone", "#F29B88"], ["terracotta", "#C0603E"], ["rosso", "#C8202A"], ["rosso ciliegia", "#A3122A"],
+    ["bordeaux", "#6E1A26"], ["vinaccia", "#5A1F35"], ["rosa cipria", "#E7C3BE"], ["rosa confetto", "#F4C6D4"], ["rosa", "#E99AB4"],
+    ["rosa antico", "#C59A98"], ["malva", "#A9798F"], ["fucsia", "#C8287A"], ["magenta", "#B0236F"], ["lilla", "#C2AED2"],
+    ["glicine", "#B39BCF"], ["lavanda", "#A99BD6"], ["viola", "#5E3482"], ["prugna", "#5B2A4A"], ["melanzana", "#3E1F3D"],
+    ["blu notte", "#141B33"], ["blu navy", "#1E2A4A"], ["blu", "#1F3C88"], ["blu cobalto", "#1F45A0"], ["blu elettrico", "#2A4BE0"],
+    ["carta da zucchero", "#8FA9C4"], ["azzurro", "#7DB3E0"], ["celeste", "#B8D8F0"], ["turchese", "#2AA3A6"], ["ottanio", "#1F5C66"],
+    ["petrolio", "#1D4B57"], ["verde acqua", "#7CC6B8"], ["verde menta", "#A8DCC0"], ["verde salvia", "#9AAE93"], ["verde oliva", "#6B6B2E"],
+    ["verde militare", "#4B5320"], ["kaki", "#8F8456"], ["verde prato", "#3E8E3E"], ["verde lime", "#A6C93A"], ["verde smeraldo", "#137A4F"],
+    ["verde bottiglia", "#1F4A35"], ["verde scuro", "#1E3B2B"], ["grigio perla", "#D3D4D2"], ["grigio", "#8E9295"],
+    ["grigio antracite", "#3D4044"], ["nero", "#1A1A1C"], ["argento", "#B8BCC2"]
+  ].map(function (n) { return { nome: n[0], lab: lab(hexRgb(n[1])) }; });
+
+  function nomeColore(hex) {
+    var l = lab(hexRgb(hex));
+    var best = NOMI.slice().sort(function (a, b) { return deltaE(l, a.lab) - deltaE(l, b.lab); })[0];
+    var d = deltaE(l, best.lab), dl = l[0] - best.lab[0];
+    if (d > 10 && Math.abs(dl) > 8 && !/bianco|nero|scuro|notte/.test(best.nome)) return best.nome + (dl > 0 ? " chiaro" : " scuro");
+    return best.nome;
+  }
+
   // ---- Immagine -------------------------------------------------------------
   function messaggio(t, errore) {
     var m = $("abbina-messaggio");
@@ -203,17 +230,16 @@
       b.className = "abbina__colore";
       b.dataset.hex = col.hex;
       b.style.setProperty("--c", col.hex);
-      b.setAttribute("aria-label", col.hex + ", " + Math.round(col.quota * 100) + "% del capo");
       var dot = document.createElement("span");
       b.appendChild(dot);
-      b.appendChild(document.createTextNode(col.hex + " " + Math.round(col.quota * 100) + "%"));
+      b.appendChild(document.createTextNode(nomeColore(col.hex)));
       b.addEventListener("click", function () { assegna(dove(), col.hex); });
       box.appendChild(b);
     });
     // Proposta iniziale: il colore principale per la copertina, un secondo colore ben distinto per la scritta.
     if (colori[0]) assegna("copertina", colori[0].hex);
     var secondo = colori.slice(1).filter(function (c) { return deltaE(c.lab, colori[0].lab) > 20; })[0];
-    if (secondo) assegna("scritta", secondo.hex); else assegna("scritta", null);
+    if (secondo) assegna("scritta", secondo.hex); else assegnaMetallo(scrittaConsigliata(colori[0].lab));
     $("abbina-risultati").hidden = false;
   }
 
@@ -234,19 +260,38 @@
   });
 
   // ---- Copertina e scritta ----------------------------------------------------
+  // scelta.copertina = { hex, nome }; scelta.scritta = { hex, nome, metallo } (metallo: "Oro", "Argento"… se a caldo).
   function dove() { return form.querySelector('input[name="abbina-dove"]:checked').value; }
 
-  function assegna(casella, hex) {
-    scelta[casella] = hex ? hex.toUpperCase() : null;
+  function mostra(casella) {
+    var v = scelta[casella];
     var campione = $("abbina-campione-" + casella);
-    campione.style.background = scelta[casella] || "";
-    campione.classList.toggle("abbina__campione--vuoto", !scelta[casella]);
-    $("abbina-hex-" + casella).value = scelta[casella] || "";
-    if (scelta[casella]) $("abbina-colore-" + casella).value = scelta[casella].toLowerCase();
+    campione.style.background = v ? v.hex : "";
+    campione.style.setProperty("--c", v ? v.hex : "");
+    campione.classList.toggle("abbina__campione--vuoto", !v);
+    campione.classList.toggle("abbina__campione--metallo", !!(v && v.metallo));
+    $("abbina-nome-" + casella).textContent = v ? (v.metallo ? v.metallo + ", a caldo" : maiuscola(v.nome)) : "da scegliere";
     document.querySelectorAll(".abbina__colore").forEach(function (b) {
-      b.classList.toggle("abbina__colore--copertina", b.dataset.hex === scelta.copertina);
-      b.classList.toggle("abbina__colore--scritta", b.dataset.hex === scelta.scritta);
+      var h = b.dataset.hex;
+      b.classList.toggle("abbina__colore--copertina", !!scelta.copertina && !b.dataset.metallo && h === scelta.copertina.hex);
+      b.classList.toggle("abbina__colore--scritta", !!scelta.scritta && (scelta.scritta.metallo ? b.dataset.metallo === scelta.scritta.metallo : !b.dataset.metallo && h === scelta.scritta.hex));
     });
+  }
+  function maiuscola(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+
+  function assegna(casella, hex) {
+    hex = hex ? hex.toUpperCase() : null;
+    scelta[casella] = hex ? { hex: hex, nome: nomeColore(hex), metallo: null } : null;
+    mostra(casella);
+    proposte();
+  }
+
+  function assegnaMetallo(nome) {
+    var f = foil.filter(function (x) { return x.nome === nome; })[0];
+    if (!f) return;
+    scelta.scritta = { hex: f.colore, nome: nome.toLowerCase(), metallo: nome };
+    form.querySelector('input[name="abbina-dove"][value="scritta"]').checked = true;
+    mostra("scritta");
     proposte();
   }
 
@@ -260,18 +305,21 @@
   function proposte() {
     if (!dati || !scelta.copertina) return;
     $("abbina-risultati").hidden = false;
-    var l = lab(hexRgb(scelta.copertina));
-    var f = scelta.scritta ? foilPiuVicino(scelta.scritta).nome : null;
+    var l = lab(hexRgb(scelta.copertina.hex));
+    var s = scelta.scritta;
+    var metallo = s ? (s.metallo || foilPiuVicino(s.hex).nome) : null;
+    $("abbina-scritta-materiali").textContent = !s
+      ? "Per ogni copertina ti consigliamo il metallizzato più adatto."
+      : s.metallo
+        ? "Scritta in " + s.metallo.toLowerCase() + ", a caldo."
+        : "Scritta in " + metallo.toLowerCase() + " a caldo, il metallizzato più vicino al colore scelto. Per la scritta stampata proprio in quel colore, guarda il colore esatto.";
 
-    $("abbina-scritta-materiali").textContent = scelta.scritta
-      ? "Scritta in " + f.toLowerCase() + ", la più vicina al colore scelto: la scritta a caldo esiste in oro, oro rosa, argento e bronzo."
-      : "Scritta consigliata per ogni copertina. Puoi anche scegliere un colore per la scritta qui sopra.";
     var vicine = copertine.map(function (x) { return { c: x.c, lab: x.lab, d: deltaE(l, x.lab) }; })
       .sort(function (a, b) { return a.d - b.d; }).slice(0, 3);
     var lista = $("abbina-lista");
     lista.textContent = "";
     vicine.forEach(function (v) {
-      var sc = f || scrittaConsigliata(v.lab);
+      var sc = metallo || scrittaConsigliata(v.lab);
       var li = document.createElement("li");
       var cop = document.createElement("span");
       cop.className = "abbina__cop";
@@ -295,7 +343,6 @@
       li.appendChild(bt);
       lista.appendChild(li);
     });
-
     propostaEsatta();
   }
 
@@ -311,16 +358,17 @@
   }
   var MIN_CONTRASTO = 3;
 
-  // Se il colore scelto si legge male sulla copertina, il colore leggibile più vicino tra quelli del capo,
-  // le scritte a caldo, il bianco e il nero.
+  // Se il colore voluto si legge male sulla copertina: il colore leggibile più vicino tra quelli del vestito,
+  // i metallizzati, il bianco e il nero.
   function scrittaLeggibile(fondo, voluta) {
-    if (contrasto(fondo, voluta) >= MIN_CONTRASTO) return voluta;
-    var candidati = [].slice.call(document.querySelectorAll(".abbina__colore")).map(function (b) { return b.dataset.hex; })
-      .concat(foil.map(function (f) { return f.colore; }), ["#FFFFFF", "#1C1C1C"]);
-    var ok = candidati.filter(function (c) { return contrasto(fondo, c) >= MIN_CONTRASTO; });
-    if (!ok.length) ok = [contrasto(fondo, "#FFFFFF") > contrasto(fondo, "#1C1C1C") ? "#FFFFFF" : "#1C1C1C"];
-    var lv = lab(hexRgb(voluta));
-    return ok.sort(function (a, b) { return deltaE(lv, lab(hexRgb(a))) - deltaE(lv, lab(hexRgb(b))); })[0].toUpperCase();
+    if (contrasto(fondo, voluta.hex) >= MIN_CONTRASTO) return voluta;
+    var candidati = [].slice.call(document.querySelectorAll("#abbina-palette .abbina__colore")).map(function (b) { return { hex: b.dataset.hex, nome: nomeColore(b.dataset.hex), metallo: null }; })
+      .concat(foil.map(function (f) { return { hex: f.colore, nome: f.nome.toLowerCase(), metallo: f.nome }; }),
+        [{ hex: "#FFFFFF", nome: "bianco", metallo: null }, { hex: "#1C1C1C", nome: "nero", metallo: null }]);
+    var ok = candidati.filter(function (c) { return contrasto(fondo, c.hex) >= MIN_CONTRASTO; });
+    if (!ok.length) ok = [contrasto(fondo, "#FFFFFF") > contrasto(fondo, "#1C1C1C") ? candidati[candidati.length - 2] : candidati[candidati.length - 1]];
+    var lv = lab(hexRgb(voluta.hex));
+    return ok.sort(function (a, b) { return deltaE(lv, lab(hexRgb(a.hex))) - deltaE(lv, lab(hexRgb(b.hex))); })[0];
   }
 
   function materialeAttuale() {
@@ -333,34 +381,50 @@
   var esatta = null;
   function propostaEsatta() {
     if (!dati || !scelta.copertina) return;
+    var s = scelta.scritta;
     var chkC = $("abbina-parte-copertina"), chkS = $("abbina-parte-scritta");
-    chkS.disabled = !scelta.scritta;
-    $("abbina-parte-scritta-testo").textContent = scelta.scritta ? "Scritta nel colore esatto" : "Scritta nel colore esatto (scegli prima un colore per la scritta)";
-    var partC = chkC.checked, partS = chkS.checked && !!scelta.scritta;
+    var scrittaStampabile = !!(s && !s.metallo);
+    chkS.disabled = !scrittaStampabile;
+    $("abbina-parte-scritta-testo").textContent = scrittaStampabile
+      ? "Scritta stampata " + s.nome
+      : "Scritta stampata nel colore del vestito (scegline uno per la scritta)";
+    $("abbina-parte-copertina-testo").textContent = "Copertina stampata " + scelta.copertina.nome;
+    var partC = chkC.checked, partS = chkS.checked && scrittaStampabile;
     var mat = materialeAttuale();
-    var fondo = partC ? scelta.copertina : mat.colore;
-    var foilNome = scrittaConsigliata(lab(hexRgb(fondo)));
-    var testo = partS ? scrittaLeggibile(fondo, scelta.scritta) : (foil.filter(function (x) { return x.nome === foilNome; })[0] || foil[0]).colore;
-    esatta = { copertina: partC ? scelta.copertina : "", scritta: partS ? testo : "", foil: foilNome };
+    var fondo = partC ? scelta.copertina.hex : mat.colore;
+
+    var testo, corretta = false;
+    if (partS) {
+      testo = scrittaLeggibile(fondo, s);
+      corretta = testo.hex !== s.hex;
+    } else {
+      var m = s && s.metallo ? s.metallo : scrittaConsigliata(lab(hexRgb(fondo)));
+      var f = foil.filter(function (x) { return x.nome === m; })[0] || foil[0];
+      testo = { hex: f.colore, nome: f.nome.toLowerCase(), metallo: f.nome };
+    }
+    esatta = {
+      copertina: partC ? scelta.copertina : null,
+      scritta: testo.metallo ? null : testo,
+      metallo: testo.metallo || null
+    };
 
     var ant = $("abbina-hex-anteprima");
     ant.style.setProperty("--cop", fondo);
-    ant.style.color = testo;
-    var frasi = [];
-    if (partC) frasi.push("Copertina stampata e plastificata nel colore " + scelta.copertina + ", finitura liscia");
-    else frasi.push("Copertina " + mat.nome + " del catalogo");
-    frasi.push(partS ? "scritta stampata nel colore " + testo : "scritta in " + foilNome.toLowerCase() + " a caldo");
+    ant.style.color = testo.hex;
+    var frasi = [partC ? "Copertina " + scelta.copertina.nome + ", stampata e plastificata in bottega" : "Copertina " + mat.nome + " del catalogo"];
+    frasi.push(testo.metallo ? "scritta in " + testo.metallo.toLowerCase() + " a caldo" : "scritta stampata " + testo.nome);
     $("abbina-hex-testo").textContent = frasi.join(", ") + ".";
 
     var avviso = $("abbina-leggibile");
-    avviso.hidden = !(partS && testo !== scelta.scritta);
-    if (!avviso.hidden) {
-      avviso.textContent = "La scritta " + scelta.scritta + " su questa copertina si leggerebbe male: usiamo " + testo +
-        ", il colore leggibile più vicino.";
+    avviso.hidden = !corretta;
+    if (corretta) {
+      avviso.textContent = "Una scritta " + s.nome + " su questa copertina si leggerebbe male: usiamo " +
+        (testo.metallo ? "l'" + testo.metallo.toLowerCase() + " a caldo" : "il " + testo.nome) + ", il colore leggibile più vicino.";
     }
+    var niente = !esatta.copertina && !esatta.scritta;
     var bt = $("abbina-hex-scegli");
-    bt.disabled = !partC && !partS;
-    bt.textContent = !partC && !partS ? "Scegli copertina o scritta" : "Scegli il colore esatto";
+    bt.disabled = niente;
+    bt.textContent = niente ? "Scegli copertina o scritta" : "Scegli il colore esatto";
   }
 
   function usaMateriale(c, sc) {
@@ -378,11 +442,13 @@
 
   $("abbina-hex-scegli").addEventListener("click", function () {
     if (!esatta || (!esatta.copertina && !esatta.scritta)) return;
-    $("hex-copertina").value = esatta.copertina;
-    $("hex-scritta").value = esatta.scritta;
+    $("hex-copertina").value = esatta.copertina ? esatta.copertina.hex : "";
+    $("hex-copertina-nome").value = esatta.copertina ? esatta.copertina.nome : "";
+    $("hex-scritta").value = esatta.scritta ? esatta.scritta.hex : "";
+    $("hex-scritta-nome").value = esatta.scritta ? esatta.scritta.nome : "";
     if (esatta.copertina) form.querySelectorAll('input[name="copertina"]').forEach(function (r) { r.checked = false; });
-    if (!esatta.scritta) {
-      var r = form.querySelector('input[name="testo"][value="' + esatta.foil + '"]');
+    if (esatta.metallo) {
+      var r = form.querySelector('input[name="testo"][value="' + esatta.metallo + '"]');
       if (r) r.checked = true;
     }
     form.dispatchEvent(new Event("hex-cambiato"));
@@ -393,16 +459,10 @@
   form.querySelectorAll('input[name="copertina"]').forEach(function (r) { r.addEventListener("change", propostaEsatta); });
 
   // ---- Ingressi -------------------------------------------------------------
-  ["copertina", "scritta"].forEach(function (casella) {
-    $("abbina-colore-" + casella).addEventListener("input", function () { assegna(casella, this.value); });
-    $("abbina-hex-" + casella).addEventListener("change", function () {
-      var v = this.value.trim();
-      if (!v) { assegna(casella, null); return; }
-      if (v[0] !== "#") v = "#" + v;
-      if (/^#[0-9a-fA-F]{6}$/.test(v)) { messaggio(""); assegna(casella, v); }
-      else messaggio("Il codice colore ha 6 cifre esadecimali, per esempio #6B1E2A.", true);
-    });
+  document.querySelectorAll("#abbina-metalli .abbina__colore").forEach(function (b) {
+    b.addEventListener("click", function () { assegnaMetallo(b.dataset.metallo); });
   });
+  $("abbina-colore-mano").addEventListener("input", function () { assegna(dove(), this.value); });
   $("abbina-foto").addEventListener("change", function () { caricaFile(this.files[0]); });
 
   function immagineDa(dt) {

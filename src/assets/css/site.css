@@ -480,3 +480,17 @@ input[type="date"] { font: inherit; color: var(--ink); background: var(--paper);
 .abbina__parti input:disabled + span { color: var(--muted); }
 .abbina__leggibile { margin: 0; padding: .5rem .7rem; background: var(--mark); border-radius: var(--radius); font-size: .88rem; }
 .bottone:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Colori con nome, scritte metallizzate */
+.abbina__istruzione { margin: 0 0 .6rem; }
+.abbina__nome-colore { color: var(--muted); font-size: .9rem; }
+.abbina__casella .abbina__campione { width: 2.6rem; height: 2.6rem; }
+.abbina__metalli { margin-bottom: .6rem; }
+.abbina__metalli .abbina__titolo { font-size: .9rem; margin-bottom: .4rem; }
+.abbina__colore--metallo span, .abbina__campione--metallo { background: linear-gradient(135deg, var(--c, currentColor), color-mix(in srgb, var(--c, #C9A24A), #fff 55%) 50%, var(--c, currentColor)) !important; }
+.abbina__campione--metallo { --c: inherit; }
+.abbina__colore { padding-right: .8rem; }
+.abbina__colore--copertina::after, .abbina__colore--scritta::after { margin-left: .2rem; }
+.abbina__altro { margin: 0 0 1rem; }
+.abbina__altro label { position: relative; cursor: pointer; }
+.abbina__selettore { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }

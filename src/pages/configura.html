@@ -75,6 +75,8 @@
       </p>
       <input type="hidden" id="hex-copertina" value="">
       <input type="hidden" id="hex-scritta" value="">
+      <input type="hidden" id="hex-copertina-nome" value="">
+      <input type="hidden" id="hex-scritta-nome" value="">
       <details class="abbina" id="abbina">
         <summary><span class="abbina__nome">Trova i colori del tuo vestito</span> <span class="abbina__prezzo">gratis; il colore esatto costa {{ dati.abbinamento.prezzo_hex|euro }} in più a copia</span></summary>
         <div class="abbina__corpo">
@@ -98,27 +100,32 @@
               <p class="campo__aiuto">Tocca il vestito nella foto per prendere un colore preciso.</p>
             </div>
             <div class="abbina__colori">
-              <p class="abbina__titolo">Colori del capo</p>
+              <p class="abbina__titolo">Colori del vestito</p>
               <div class="abbina__palette" id="abbina-palette" role="group" aria-label="Colori trovati nel vestito"></div>
-              <p class="campo__aiuto">Scegli dove usarlo, poi tocca un colore.</p>
             </div>
           </div>
+          <p class="abbina__spiega abbina__istruzione">Scegli se il colore va sulla copertina o sulla scritta, poi tocca un colore del vestito o un punto della foto.</p>
           <div class="abbina__caselle" role="radiogroup" aria-label="Dove usare il colore">
             <label class="abbina__casella">
               <input type="radio" name="abbina-dove" value="copertina" checked>
               <span class="abbina__campione" id="abbina-campione-copertina"></span>
-              <span class="abbina__casella-testo"><strong>Copertina</strong>
-                <span class="abbina__riga"><input type="color" id="abbina-colore-copertina" value="#6b1e2a" aria-label="Colore della copertina a mano"><input type="text" id="abbina-hex-copertina" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#RRGGBB" aria-label="Codice del colore della copertina"></span>
-              </span>
+              <span class="abbina__casella-testo"><strong>Copertina</strong><span id="abbina-nome-copertina" class="abbina__nome-colore">da scegliere</span></span>
             </label>
             <label class="abbina__casella">
               <input type="radio" name="abbina-dove" value="scritta">
               <span class="abbina__campione" id="abbina-campione-scritta"></span>
-              <span class="abbina__casella-testo"><strong>Scritta</strong>
-                <span class="abbina__riga"><input type="color" id="abbina-colore-scritta" value="#c9a24a" aria-label="Colore della scritta a mano"><input type="text" id="abbina-hex-scritta" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#RRGGBB" aria-label="Codice del colore della scritta"></span>
-              </span>
+              <span class="abbina__casella-testo"><strong>Scritta</strong><span id="abbina-nome-scritta" class="abbina__nome-colore">da scegliere</span></span>
             </label>
           </div>
+          <div class="abbina__metalli">
+            <p class="abbina__titolo">Per la scritta, anche i metallizzati classici</p>
+            <div class="abbina__palette" id="abbina-metalli" role="group" aria-label="Scritte metallizzate a caldo">
+              {% for t in dati.colori_testo %}
+              <button type="button" class="abbina__colore abbina__colore--metallo" data-metallo="{{ t.nome }}" data-hex="{{ t.colore }}" style="--c: {{ t.colore }}"><span></span>{{ t.nome }}</button>
+              {% endfor %}
+            </div>
+          </div>
+          <p class="abbina__altro"><label class="collegamento collegamento--piccolo">Scegli un altro colore a mano<input type="color" id="abbina-colore-mano" value="#6b1e2a" class="abbina__selettore"></label></p>
           <div class="abbina__proposte" id="abbina-risultati" hidden>
             <div class="abbina__proposta">
               <p class="abbina__titolo">Con i nostri materiali, al prezzo normale</p>
@@ -128,7 +135,7 @@
             <div class="abbina__proposta abbina__proposta--hex">
               <p class="abbina__titolo">Nel colore esatto, {{ dati.abbinamento.prezzo_hex|euro }} in più a copia</p>
               <div class="abbina__parti">
-                <label class="interruttore"><input type="checkbox" id="abbina-parte-copertina" checked><span>Copertina nel colore esatto</span></label>
+                <label class="interruttore"><input type="checkbox" id="abbina-parte-copertina" checked><span id="abbina-parte-copertina-testo">Copertina nel colore esatto</span></label>
                 <label class="interruttore"><input type="checkbox" id="abbina-parte-scritta" checked><span id="abbina-parte-scritta-testo">Scritta nel colore esatto</span></label>
               </div>
               <div class="abbina__hex">
