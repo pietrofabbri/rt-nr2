@@ -127,10 +127,15 @@
             </div>
             <div class="abbina__proposta abbina__proposta--hex">
               <p class="abbina__titolo">Nel colore esatto, {{ dati.abbinamento.prezzo_hex|euro }} in più a copia</p>
+              <div class="abbina__parti">
+                <label class="interruttore"><input type="checkbox" id="abbina-parte-copertina" checked><span>Copertina nel colore esatto</span></label>
+                <label class="interruttore"><input type="checkbox" id="abbina-parte-scritta" checked><span id="abbina-parte-scritta-testo">Scritta nel colore esatto</span></label>
+              </div>
               <div class="abbina__hex">
                 <span class="abbina__cop abbina__cop--grande" id="abbina-hex-anteprima"><span>Aa</span></span>
                 <p class="abbina__spiega" id="abbina-hex-testo"></p>
               </div>
+              <p class="abbina__leggibile" id="abbina-leggibile" hidden></p>
               <button type="button" class="bottone bottone--piccolo" id="abbina-hex-scegli">Scegli il colore esatto</button>
             </div>
           </div>

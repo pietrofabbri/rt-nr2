@@ -296,13 +296,71 @@
       lista.appendChild(li);
     });
 
-    var scrittaHex = scelta.scritta || (foil.filter(function (x) { return x.nome === scrittaConsigliata(l); })[0] || foil[0]).colore;
+    propostaEsatta();
+  }
+
+  // ---- Leggibilità della scritta stampata -------------------------------------
+  function luminanza(hex) {
+    var c = hexRgb(hex).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  // Rapporto di contrasto WCAG: 3 è il minimo per testi grandi come quelli in copertina.
+  function contrasto(a, b) {
+    var x = luminanza(a), y = luminanza(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  var MIN_CONTRASTO = 3;
+
+  // Se il colore scelto si legge male sulla copertina, il colore leggibile più vicino tra quelli del capo,
+  // le scritte a caldo, il bianco e il nero.
+  function scrittaLeggibile(fondo, voluta) {
+    if (contrasto(fondo, voluta) >= MIN_CONTRASTO) return voluta;
+    var candidati = [].slice.call(document.querySelectorAll(".abbina__colore")).map(function (b) { return b.dataset.hex; })
+      .concat(foil.map(function (f) { return f.colore; }), ["#FFFFFF", "#1C1C1C"]);
+    var ok = candidati.filter(function (c) { return contrasto(fondo, c) >= MIN_CONTRASTO; });
+    if (!ok.length) ok = [contrasto(fondo, "#FFFFFF") > contrasto(fondo, "#1C1C1C") ? "#FFFFFF" : "#1C1C1C"];
+    var lv = lab(hexRgb(voluta));
+    return ok.sort(function (a, b) { return deltaE(lv, lab(hexRgb(a))) - deltaE(lv, lab(hexRgb(b))); })[0].toUpperCase();
+  }
+
+  function materialeAttuale() {
+    var r = form.querySelector('input[name="copertina"]:checked');
+    var cod = r ? r.value : "CP-030";
+    return dati.copertine.filter(function (c) { return c.codice === cod; })[0];
+  }
+
+  // Proposta «colore esatto»: copertina e/o scritta stampate nel colore del vestito, sempre leggibili.
+  var esatta = null;
+  function propostaEsatta() {
+    if (!dati || !scelta.copertina) return;
+    var chkC = $("abbina-parte-copertina"), chkS = $("abbina-parte-scritta");
+    chkS.disabled = !scelta.scritta;
+    $("abbina-parte-scritta-testo").textContent = scelta.scritta ? "Scritta nel colore esatto" : "Scritta nel colore esatto (scegli prima un colore per la scritta)";
+    var partC = chkC.checked, partS = chkS.checked && !!scelta.scritta;
+    var mat = materialeAttuale();
+    var fondo = partC ? scelta.copertina : mat.colore;
+    var foilNome = scrittaConsigliata(lab(hexRgb(fondo)));
+    var testo = partS ? scrittaLeggibile(fondo, scelta.scritta) : (foil.filter(function (x) { return x.nome === foilNome; })[0] || foil[0]).colore;
+    esatta = { copertina: partC ? scelta.copertina : "", scritta: partS ? testo : "", foil: foilNome };
+
     var ant = $("abbina-hex-anteprima");
-    ant.style.setProperty("--cop", scelta.copertina);
-    ant.style.color = scrittaHex;
-    $("abbina-hex-testo").textContent = "Copertina stampata esattamente nel colore " + scelta.copertina +
-      (scelta.scritta ? " e scritta nel colore " + scelta.scritta : " e scritta in " + scrittaConsigliata(l).toLowerCase() + " a caldo") +
-      ". La stampiamo e plastifichiamo in bottega: finitura liscia, senza la grana dei materiali.";
+    ant.style.setProperty("--cop", fondo);
+    ant.style.color = testo;
+    var frasi = [];
+    if (partC) frasi.push("Copertina stampata e plastificata nel colore " + scelta.copertina + ", finitura liscia");
+    else frasi.push("Copertina " + mat.nome + " del catalogo");
+    frasi.push(partS ? "scritta stampata nel colore " + testo : "scritta in " + foilNome.toLowerCase() + " a caldo");
+    $("abbina-hex-testo").textContent = frasi.join(", ") + ".";
+
+    var avviso = $("abbina-leggibile");
+    avviso.hidden = !(partS && testo !== scelta.scritta);
+    if (!avviso.hidden) {
+      avviso.textContent = "La scritta " + scelta.scritta + " su questa copertina si leggerebbe male: usiamo " + testo +
+        ", il colore leggibile più vicino.";
+    }
+    var bt = $("abbina-hex-scegli");
+    bt.disabled = !partC && !partS;
+    bt.textContent = !partC && !partS ? "Scegli copertina o scritta" : "Scegli il colore esatto";
   }
 
   function usaMateriale(c, sc) {
@@ -319,19 +377,20 @@
   }
 
   $("abbina-hex-scegli").addEventListener("click", function () {
-    if (!scelta.copertina) return;
-    $("hex-copertina").value = scelta.copertina;
-    $("hex-scritta").value = scelta.scritta || "";
-    if (!scelta.scritta) {
-      var nome = scrittaConsigliata(lab(hexRgb(scelta.copertina)));
-      var r = form.querySelector('input[name="testo"][value="' + nome + '"]');
+    if (!esatta || (!esatta.copertina && !esatta.scritta)) return;
+    $("hex-copertina").value = esatta.copertina;
+    $("hex-scritta").value = esatta.scritta;
+    if (esatta.copertina) form.querySelectorAll('input[name="copertina"]').forEach(function (r) { r.checked = false; });
+    if (!esatta.scritta) {
+      var r = form.querySelector('input[name="testo"][value="' + esatta.foil + '"]');
       if (r) r.checked = true;
     }
-    form.querySelectorAll('input[name="copertina"]').forEach(function (r) { r.checked = false; });
     form.dispatchEvent(new Event("hex-cambiato"));
     messaggio("Fatto: colore esatto del vestito, " + Libro.euro(dati.abbinamento.prezzo_hex) + " in più a copia.");
     $("hex-stato").scrollIntoView({ block: "nearest" });
   });
+  ["abbina-parte-copertina", "abbina-parte-scritta"].forEach(function (id) { $(id).addEventListener("change", propostaEsatta); });
+  form.querySelectorAll('input[name="copertina"]').forEach(function (r) { r.addEventListener("change", propostaEsatta); });
 
   // ---- Ingressi -------------------------------------------------------------
   ["copertina", "scritta"].forEach(function (casella) {

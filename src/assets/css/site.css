@@ -476,3 +476,7 @@ input[type="date"] { font: inherit; color: var(--ink); background: var(--paper);
 @media (max-width: 700px) {
   .abbina__caselle, .abbina__proposte { grid-template-columns: 1fr; }
 }
+.abbina__parti { display: flex; flex-direction: column; gap: .35rem; font-size: .9rem; }
+.abbina__parti input:disabled + span { color: var(--muted); }
+.abbina__leggibile { margin: 0; padding: .5rem .7rem; background: var(--mark); border-radius: var(--radius); font-size: .88rem; }
+.bottone:disabled { opacity: .5; cursor: not-allowed; }

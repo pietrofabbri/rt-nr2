@@ -89,12 +89,12 @@
 
   function statoHex(c, hexS, foilRadio) {
     var box = $("hex-stato");
-    box.hidden = !c.hex;
-    if (!c.hex) return;
-    $("hex-stato-cop").style.background = c.hex;
+    box.hidden = !(c.hex || hexS);
+    if (box.hidden) return;
+    $("hex-stato-cop").style.background = c.colore;
     $("hex-stato-scr").style.background = hexS || (foilRadio ? foilRadio.dataset.colore : "");
-    $("hex-stato-testo").textContent = "Colore esatto del vestito: copertina " + c.hex + ", scritta " +
-      (hexS ? hexS : "in " + (foilRadio ? foilRadio.value.toLowerCase() : "oro")) + ". " +
+    $("hex-stato-testo").textContent = "Colore esatto del vestito: copertina " + (c.hex ? c.hex : c.nome) + ", scritta " +
+      (hexS ? "stampata " + hexS : "in " + (foilRadio ? foilRadio.value.toLowerCase() : "oro")) + ". " +
       Libro.euro(dati.abbinamento.prezzo_hex) + " in più a copia.";
   }
 
@@ -122,7 +122,7 @@
     Libro.copertina(libro, { colore: c.colore, finitura: Libro.classeFinitura(c.finitura), nome: c.nome, prezzo: Libro.euro(c.prezzo) });
     Libro.decoro(libro, decoro);
     $("riga-decoro").hidden = !decoro;
-    $("riga-abbinamento").hidden = !c.hex;
+    $("riga-abbinamento").hidden = !(c.hex || hexS);
     statoHex(c, hexS, foilRadio);
     $("conto-copertina").textContent = Libro.euro(c.prezzo);
     $("conto-copie").textContent = copie;
@@ -140,13 +140,13 @@
         : "Carica il PDF o indica il numero di facciate per vedere il totale.";
       return;
     }
-    var copia = c.prezzo + (decoro ? dati.decoro.prezzo : 0) + (c.hex ? dati.abbinamento.prezzo_hex : 0) + stampa;
+    var copia = c.prezzo + (decoro ? dati.decoro.prezzo : 0) + (c.hex || hexS ? dati.abbinamento.prezzo_hex : 0) + stampa;
     var totale = copia * copie + prezzoConsegna;
     $("conto-stampa").textContent = Libro.euro(stampa);
     $("conto-copia").textContent = Libro.euro(copia);
     $("conto-totale").textContent = Libro.euro(totale);
     $("barra-totale").textContent = Libro.euro(totale);
-    riepilogo.textContent = copie + (copie === 1 ? " copia" : " copie") + " in " + c.nome + ", " + facciate + " facciate, " +
+    riepilogo.textContent = copie + (copie === 1 ? " copia" : " copie") + " in " + c.nome + (hexS && !c.hex ? " con scritta nel colore esatto" : "") + ", " + facciate + " facciate, " +
       (cons.value === "ritiro" ? "ritiro in bottega" : "spedizione compresa") + ": " + Libro.euro(totale) + ".";
   }
 
