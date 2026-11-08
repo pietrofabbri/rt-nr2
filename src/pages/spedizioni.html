@@ -7,11 +7,11 @@
   <p class="apertura__sotto">Spediamo con {{ dati.ordini.corriere }} in tutta Italia a {{ dati.spedizione.prezzo|euro }} per ordine, oppure ritiri gratis in bottega a Ferrara.</p>
 
   <h2>Quando parte</h2>
-  <p>Gli ordini completi entro le {{ dati.ordini.ora_limite }} di un giorno lavorativo partono in giornata; gli altri il giorno lavorativo successivo. Il corriere consegna di solito in {{ dati.ordini.consegna_corriere }}. Garantiamo la data di spedizione, non quella di arrivo.</p>
+  <p>Gli ordini completi entro le {{ dati.ordini.ora_limite }} di un giorno lavorativo spesso partono in giornata; la data garantita è al più tardi {{ dati.ordini.giorni_massimi_lavorazione }} giorni lavorativi dopo. Il corriere consegna di solito in {{ dati.ordini.consegna_corriere }}. Garantiamo la data di spedizione, non quella di arrivo.</p>
   <p>Quando il pacco parte ti mandiamo il codice per seguirlo. Se il corriere ritarda, ce ne occupiamo noi.</p>
 
   <h2>Ritiro in bottega</h2>
-  <p>Volta la carta, {{ dati.bottega.indirizzo }}. Orari: {{ dati.bottega.orari }}. Il ritiro è gratuito e la tesi è pronta nello stesso giorno in cui partirebbe con il corriere.</p>
+  <p>Volta la carta, {{ dati.bottega.indirizzo }}. Orari: {{ dati.bottega.orari }}. Il ritiro è gratuito e la tesi è pronta negli stessi tempi della spedizione: spesso in giornata, al più tardi {{ dati.ordini.giorni_massimi_lavorazione }} giorni lavorativi dopo.</p>
 
   <h2>Zone servite con raccomandata</h2>
   <p>Nelle zone che il corriere raggiunge con difficoltà spediamo con posta raccomandata. Se preferisci il corriere anche lì, scrivici: concordiamo il costo.</p>

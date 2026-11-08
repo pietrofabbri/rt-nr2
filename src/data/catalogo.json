@@ -1028,7 +1028,9 @@
    5
   ],
   "corriere": "GLS",
-  "consegna_corriere": "24-48 ore lavorative"
+  "consegna_corriere": "24-48 ore lavorative",
+  "capacita_giorno": 25,
+  "giorni_massimi_lavorazione": 2
  },
  "consegna": [
   {
@@ -1075,5 +1077,9 @@
  "recensioni": {
   "media": "4,8",
   "fonte": "Google"
+ },
+ "abbinamento": {
+  "prezzo": 10,
+  "api_link": null
  }
 }

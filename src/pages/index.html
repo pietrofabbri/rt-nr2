@@ -3,13 +3,13 @@
 {% set cop = dati.copertine | selectattr("codice", "equalto", "CP-030") | first %}
 {% set scelte = ["CP-030", "CP-073", "CP-072", "CP-056", "CP-010", "CP-084", "CP-034", "CP-017"] %}
 {% block titolo %}Tesi di laurea rilegate a mano, spedite in tutta Italia | rilegaretesi{% endblock %}
-{% block descrizione %}Stampa e rilegatura artigianale della tesi di laurea a Ferrara. Carica il PDF, scegli tra {{ dati.copertine|length }} copertine: ordini entro le 12 spediti in giornata, oppure ritiro gratuito in bottega.{% endblock %}
+{% block descrizione %}Stampa e rilegatura artigianale della tesi di laurea a Ferrara. Carica il PDF, scegli tra {{ dati.copertine|length }} copertine: gli ordini entro le 12 spesso partono in giornata, oppure ritiri gratis in bottega.{% endblock %}
 
 {% block contenuto %}
 <section class="apertura">
   <div class="apertura__testo">
     <h1>La tua tesi, rilegata a mano a Ferrara.</h1>
-    <p class="apertura__sotto">Carica il PDF e scegli la copertina. Se l'ordine arriva entro le 12 di un giorno lavorativo, la tesi parte in giornata, senza costi in più. Se sei a Ferrara, la ritiri in bottega.</p>
+    <p class="apertura__sotto">Carica il PDF e scegli la copertina. Se l'ordine arriva entro le 12 di un giorno lavorativo, spesso la tesi parte in giornata, senza costi in più. Se sei a Ferrara, la ritiri gratis in bottega.</p>
     <div class="apertura__azioni">
       <a class="bottone" href="configura.html">Configura la tesi</a>
       <a class="collegamento" href="#prezzi">Vedi i prezzi</a>
@@ -49,13 +49,22 @@
     </li>
     <li>
       <h3>Stampiamo e rilegiamo</h3>
-      <p>Lavoriamo in ordine di data di laurea. Gli ordini arrivati entro le 12 di un giorno lavorativo partono in giornata.</p>
+      <p>Lavoriamo in ordine di data di laurea. Gli ordini arrivati entro le 12 spesso partono in giornata; al più tardi entro {{ dati.ordini.giorni_massimi_lavorazione }} giorni lavorativi.</p>
     </li>
     <li>
       <h3>Ritiri o ricevi</h3>
       <p>Ritiro gratuito in via Voltapaletto a Ferrara, oppure corriere GLS in 24-48 ore lavorative, con il codice per seguire il pacco.</p>
     </li>
   </ol>
+</section>
+
+<section class="sezione abbina-home">
+  <div class="abbina-home__testo">
+    <h2>La copertina in tinta con il vestito della laurea</h2>
+    <p>Molti scelgono il colore della tesi in base a quello che indosseranno. Carica una foto del vestito o uno screenshot del negozio: troviamo il colore e ti proponiamo le copertine più vicine, con la scritta che ci sta meglio. Poi confrontiamo il colore sul campionario vero, prima di stampare.</p>
+    <p class="abbina-home__prezzo">{{ dati.abbinamento.prezzo|euro }} in più a copia.</p>
+    <a class="bottone" href="configura.html#abbina">Abbina la tesi al vestito</a>
+  </div>
 </section>
 
 <section class="sezione sezione--bottega">
@@ -107,7 +116,7 @@
   <div class="domande">
     <details>
       <summary>Mi laureo tra pochi giorni: faccio in tempo?</summary>
-      <p>Se l'ordine arriva entro le 12 di un giorno lavorativo, la tesi parte in giornata, senza sovrapprezzo. Il corriere consegna di solito in 24-48 ore lavorative: garantiamo la data di spedizione, non quella di arrivo. Se sei vicino a Ferrara, il ritiro in bottega è la strada più sicura. Il configuratore ti dice la data esatta.</p>
+      <p>Se l'ordine arriva entro le 12 di un giorno lavorativo, spesso la tesi parte in giornata, senza sovrapprezzo, ma non possiamo garantirlo sempre. Il configuratore ti mostra la data di spedizione garantita. Il corriere consegna di solito in 24-48 ore lavorative: garantiamo la spedizione, non l'arrivo. Se sei vicino a Ferrara, il ritiro in bottega è la strada più sicura.</p>
     </details>
     <details>
       <summary>Il mio frontespizio va bene per la copertina?</summary>

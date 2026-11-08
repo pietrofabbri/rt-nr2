@@ -14,6 +14,7 @@
         <dl>
           <div><dt>Copertina</dt><dd id="conto-copertina">{{ cop.prezzo|euro }}</dd></div>
           <div id="riga-decoro" hidden><dt>Decoro</dt><dd>{{ dati.decoro.prezzo|euro }}</dd></div>
+          <div id="riga-abbinamento" hidden><dt>Abbinamento al vestito</dt><dd>{{ dati.abbinamento.prezzo|euro }}</dd></div>
           <div><dt>Stampa</dt><dd id="conto-stampa">—</dd></div>
           <div class="conto__copia"><dt>Una copia</dt><dd id="conto-copia">—</dd></div>
           <div><dt>Copie</dt><dd id="conto-copie">1</dd></div>
@@ -67,6 +68,50 @@
     <fieldset class="passo">
       <legend><span class="passo__n">3</span> Copertina</legend>
       <p class="passo__aiuto">Avorio e bordeaux sono i più scelti. Molti abbinano il colore al vestito della laurea. Per vedere i colori dal vivo, il campionario è in bottega.</p>
+      <details class="abbina" id="abbina">
+        <summary><span class="abbina__nome">Abbina la copertina al tuo vestito</span> <span class="abbina__prezzo">+ {{ dati.abbinamento.prezzo|euro }} a copia</span></summary>
+        <div class="abbina__corpo">
+          <p>Carica una foto del vestito o uno screenshot della pagina del negozio: troviamo il colore e le copertine più vicine. Basta il vestito, il viso non serve.</p>
+          <div class="abbina__fonti">
+            <label class="caricamento caricamento--piccolo">
+              <input type="file" id="abbina-foto" accept="image/*">
+              <span class="caricamento__testo"><strong>Carica la foto</strong> o lo screenshot</span>
+            </label>
+            <div class="abbina__link">
+              <label for="abbina-url">Oppure incolla il link del vestito nel negozio online</label>
+              <div class="abbina__riga">
+                <input type="url" id="abbina-url" placeholder="https://" inputmode="url" autocomplete="off">
+                <button type="button" class="bottone bottone--piccolo" id="abbina-url-vai">Trova il colore</button>
+              </div>
+            </div>
+          </div>
+          <p class="abbina__messaggio" id="abbina-messaggio" aria-live="polite"></p>
+          <div class="abbina__lavoro" id="abbina-lavoro" hidden>
+            <div class="abbina__foto">
+              <div class="abbina__tela"><canvas id="abbina-tela" aria-label="La foto del vestito: tocca per prendere il colore"></canvas><span class="abbina__mirino" id="abbina-mirino" hidden></span></div>
+              <p class="campo__aiuto">Tocca il vestito nella foto per prendere il colore esatto.</p>
+            </div>
+            <div class="abbina__colori">
+              <p class="abbina__titolo">Colori nella foto</p>
+              <div class="abbina__palette" id="abbina-palette" role="group" aria-label="Colori trovati nella foto"></div>
+            </div>
+          </div>
+          <div class="abbina__scelto">
+            <span class="abbina__campione" id="abbina-campione"></span>
+            <label>Colore del vestito
+              <span class="abbina__riga"><input type="color" id="abbina-colore" value="#6b1e2a" aria-label="Scegli il colore a mano"><input type="text" id="abbina-hex" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#RRGGBB" aria-label="Codice esadecimale del colore"></span>
+            </label>
+          </div>
+          <div id="abbina-risultati" hidden>
+            <p class="abbina__titolo">Le copertine più vicine al tuo vestito</p>
+            <ul class="abbina__lista" id="abbina-lista"></ul>
+          </div>
+          <label class="interruttore">
+            <input type="checkbox" id="abbinamento">
+            <span>Abbinamento al vestito (+ {{ dati.abbinamento.prezzo|euro }} a copia): la foto arriva in bottega con l'ordine e confrontiamo il colore sul campionario vero prima di stampare.</span>
+          </label>
+        </div>
+      </details>
       <div class="filtri">
         <div class="filtri__gruppo" role="group" aria-label="Finitura">
           <button type="button" class="filtro" data-filtro="finitura" data-valore="" aria-pressed="true">Tutte</button>
@@ -193,5 +238,6 @@
 <script src="assets/js/libro.js" defer></script>
 <script src="assets/js/date.js" defer></script>
 <script src="assets/js/configura.js" defer></script>
+<script src="assets/js/abbina.js" defer></script>
 <script type="module" src="assets/js/pdf-controllo.js"></script>
 {% endblock %}

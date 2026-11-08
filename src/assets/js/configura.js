@@ -40,31 +40,29 @@
     return null;
   }
 
-  // Data di spedizione o di ritiro, e controllo sul giorno della laurea
+  // Data di spedizione o di ritiro. Entro le 12 spesso parte in giornata, ma non è garantito:
+  // la data garantita è al più tardi dopo i giorni massimi di lavorazione.
   function aggiornaDate(consegna) {
-    var sped = DateRT.spedizione(dati, new Date());
-    var oggi = DateRT.iso(new Date()) === DateRT.iso(sped);
+    var primo = DateRT.spedizione(dati, new Date());
+    var ultimo = DateRT.aggiungiLavorativi(dati, primo, dati.ordini.giorni_massimi_lavorazione);
+    var oggi = DateRT.iso(new Date()) === DateRT.iso(primo);
+    var quando = (oggi ? "spesso già oggi" : "a volte già " + DateRT.fmt(primo)) + ", al più tardi " + DateRT.fmt(ultimo);
     var testo, breve, avviso = "";
     if (consegna === "ritiro") {
-      testo = "Pronta per il ritiro " + (oggi ? "oggi, " : "") + DateRT.fmt(sped) + ", in via Voltapaletto 25.";
-      breve = "Ritiro: " + DateRT.fmt(sped);
+      testo = "Pronta per il ritiro in via Voltapaletto 25: " + quando + ".";
+      breve = "Ritiro entro " + DateRT.fmt(ultimo);
     } else {
-      var arrivo = DateRT.aggiungiLavorativi(dati, sped, 2);
-      testo = "Spedizione " + (oggi ? "oggi, " : "") + DateRT.fmt(sped) + ". Con il corriere di solito arriva entro " +
-        DateRT.fmt(arrivo) + ": garantiamo la data di spedizione, non quella di arrivo.";
-      breve = "Spedizione: " + DateRT.fmt(sped);
+      testo = "Spedizione: " + quando + ". Il corriere consegna di solito in 24-48 ore lavorative dalla spedizione: garantiamo la data di spedizione, non quella di arrivo.";
+      breve = "Spedizione entro " + DateRT.fmt(ultimo);
     }
     var laurea = $("laurea").value;
     if (laurea) {
-      var dl = new Date(laurea + "T12:00:00");
-      if (DateRT.iso(dl) < DateRT.iso(sped)) {
-        avviso = "La laurea è prima della data in cui la tesi sarebbe pronta: chiamaci allo 0532 208932, vediamo cosa si può fare.";
-      } else if (consegna !== "ritiro" && DateRT.iso(dl) <= DateRT.iso(DateRT.aggiungiLavorativi(dati, sped, 2))) {
+      var dl = DateRT.iso(new Date(laurea + "T12:00:00"));
+      if (dl < DateRT.iso(ultimo) || (consegna === "ritiro" && dl === DateRT.iso(ultimo))) {
+        avviso = "La laurea è molto vicina e non possiamo garantire di arrivare in tempo: chiamaci allo 0532 208932 prima di ordinare.";
+      } else if (consegna !== "ritiro" && dl <= DateRT.iso(DateRT.aggiungiLavorativi(dati, ultimo, 2))) {
         avviso = "Con il corriere potrebbe non arrivare in tempo per la laurea. Se puoi, scegli il ritiro in bottega a Ferrara, oppure chiamaci.";
       }
-    }
-    if (new Date().getHours() >= dati.ordini.ora_limite || !oggi) {
-      testo += " Gli ordini completi entro le " + dati.ordini.ora_limite + " di un giorno lavorativo partono in giornata.";
     }
     var p = $("data-consegna");
     p.textContent = testo;
@@ -90,6 +88,7 @@
     Libro.copertina(libro, { colore: c.colore, finitura: Libro.classeFinitura(c.finitura), nome: c.nome, prezzo: Libro.euro(c.prezzo) });
     Libro.decoro(libro, decoro);
     $("riga-decoro").hidden = !decoro;
+    $("riga-abbinamento").hidden = !$("abbinamento").checked;
     $("conto-copertina").textContent = Libro.euro(c.prezzo);
     $("conto-copie").textContent = copie;
     $("conto-consegna-nome").textContent = cons.value === "ritiro" ? "Ritiro in bottega" : "Spedizione";
@@ -106,14 +105,15 @@
         : "Carica il PDF o indica il numero di facciate per vedere il totale.";
       return;
     }
-    var copia = c.prezzo + (decoro ? dati.decoro.prezzo : 0) + stampa;
+    var abbinamento = $("abbinamento").checked;
+    var copia = c.prezzo + (decoro ? dati.decoro.prezzo : 0) + (abbinamento ? dati.abbinamento.prezzo : 0) + stampa;
     var totale = copia * copie + prezzoConsegna;
     $("conto-stampa").textContent = Libro.euro(stampa);
     $("conto-copia").textContent = Libro.euro(copia);
     $("conto-totale").textContent = Libro.euro(totale);
     $("barra-totale").textContent = Libro.euro(totale);
     riepilogo.textContent = copie + (copie === 1 ? " copia" : " copie") + " in " + c.nome + ", " + facciate + " facciate, " +
-      (cons.value === "ritiro" ? "ritiro in bottega" : "spedizione compresa") + ": " + Libro.euro(totale) + ".";
+      (abbinamento ? "abbinata al vestito, " : "") + (cons.value === "ritiro" ? "ritiro in bottega" : "spedizione compresa") + ": " + Libro.euro(totale) + ".";
   }
 
   // Esito del controllo del PDF
@@ -245,7 +245,7 @@
   $("vuole-fattura").addEventListener("change", function () { $("campi-fattura").hidden = !this.checked; });
 
   form.addEventListener("change", aggiorna);
-  form.addEventListener("input", function (e) { if (e.target.id !== "pdf") aggiorna(); });
+  form.addEventListener("input", function (e) { if (e.target.id !== "pdf" && e.target.id.indexOf("abbina") !== 0) aggiorna(); });
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
