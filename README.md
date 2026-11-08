@@ -33,7 +33,7 @@ Nuovo sito di vendita online delle tesi rilegate di Volta la carta.
 
 ## Staging
 
-Il sito in lavorazione è pubblicato su GitHub Pages: <https://voltalacarta.github.io/rt2/>. Il sito attuale rilegaretesi.it non viene toccato.
+Il sito in lavorazione è pubblicato su GitHub Pages: <https://pietrofabbri.github.io/rt-nr2/>. Il sito attuale rilegaretesi.it non viene toccato.
 
 ## Il sito
 
