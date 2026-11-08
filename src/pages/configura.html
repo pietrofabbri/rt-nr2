@@ -14,7 +14,7 @@
         <dl>
           <div><dt>Copertina</dt><dd id="conto-copertina">{{ cop.prezzo|euro }}</dd></div>
           <div id="riga-decoro" hidden><dt>Decoro</dt><dd>{{ dati.decoro.prezzo|euro }}</dd></div>
-          <div id="riga-abbinamento" hidden><dt>Abbinamento al vestito</dt><dd>{{ dati.abbinamento.prezzo|euro }}</dd></div>
+          <div id="riga-abbinamento" hidden><dt>Colore esatto</dt><dd>{{ dati.abbinamento.prezzo_hex|euro }}</dd></div>
           <div><dt>Stampa</dt><dd id="conto-stampa">—</dd></div>
           <div class="conto__copia"><dt>Una copia</dt><dd id="conto-copia">—</dd></div>
           <div><dt>Copie</dt><dd id="conto-copie">1</dd></div>
@@ -68,55 +68,72 @@
     <fieldset class="passo">
       <legend><span class="passo__n">3</span> Copertina</legend>
       <p class="passo__aiuto">Avorio e bordeaux sono i più scelti. Molti abbinano il colore al vestito della laurea. Per vedere i colori dal vivo, il campionario è in bottega.</p>
+      <p class="hex-stato" id="hex-stato" hidden>
+        <span class="hex-stato__campioni"><span id="hex-stato-cop"></span><span id="hex-stato-scr"></span></span>
+        <span id="hex-stato-testo"></span>
+        <button type="button" class="collegamento" id="hex-togli">Torna ai materiali</button>
+      </p>
+      <input type="hidden" id="hex-copertina" value="">
+      <input type="hidden" id="hex-scritta" value="">
       <details class="abbina" id="abbina">
-        <summary><span class="abbina__nome">Abbina la copertina al tuo vestito</span> <span class="abbina__prezzo">+ {{ dati.abbinamento.prezzo|euro }} a copia</span></summary>
+        <summary><span class="abbina__nome">Trova i colori del tuo vestito</span> <span class="abbina__prezzo">gratis; il colore esatto costa {{ dati.abbinamento.prezzo_hex|euro }} in più a copia</span></summary>
         <div class="abbina__corpo">
-          <p>Dacci il vestito in uno di questi modi: troviamo il colore e le copertine più vicine. Basta il vestito, il viso non serve.</p>
+          <p>Carica uno screenshot o una foto del vestito, da qualsiasi negozio online o dal telefono. Troviamo i colori del capo e li puoi usare per la copertina e per la scritta. Basta il vestito, il viso non serve.</p>
           <div class="abbina__fonti">
-            <div class="abbina__fonte">
-              <p class="abbina__titolo">Dal negozio online</p>
-              <label for="abbina-url" class="abbina__spiega">Incolla il link della pagina del vestito.</label>
-              <div class="abbina__riga">
-                <input type="url" id="abbina-url" placeholder="https://www.zalando.it/…" inputmode="url" autocomplete="off">
-                <button type="button" class="bottone bottone--piccolo" id="abbina-url-vai">Trova</button>
-              </div>
-            </div>
-            <div class="abbina__fonte">
-              <p class="abbina__titolo">Copia e incolla la foto</p>
-              <p class="abbina__spiega">Sulla pagina del negozio: tasto destro sulla foto del vestito, <em>Copia immagine</em>. Da telefono: tieni premuto sulla foto, <em>Copia</em>.</p>
-              <div class="abbina__incolla" id="abbina-incolla" contenteditable="true" role="textbox" aria-label="Incolla qui la foto del vestito" spellcheck="false" data-testo="Clic qui e incolla (Ctrl+V)"></div>
-            </div>
             <label class="caricamento caricamento--piccolo abbina__fonte">
               <input type="file" id="abbina-foto" accept="image/*">
-              <span class="abbina__titolo">Foto o screenshot</span>
+              <span class="abbina__titolo">Screenshot o foto</span>
               <span class="caricamento__testo"><strong>Scegli il file</strong> o trascinalo qui</span>
             </label>
+            <div class="abbina__fonte">
+              <p class="abbina__titolo">Oppure copia e incolla</p>
+              <p class="abbina__spiega">Sul negozio: tasto destro sulla foto, <em>Copia immagine</em>. Da telefono: tieni premuto sulla foto, <em>Copia</em>.</p>
+              <div class="abbina__incolla" id="abbina-incolla" contenteditable="true" role="textbox" aria-label="Incolla qui la foto del vestito" spellcheck="false" data-testo="Clic qui e incolla (Ctrl+V)"></div>
+            </div>
           </div>
           <p class="abbina__messaggio" id="abbina-messaggio" aria-live="polite"></p>
           <div class="abbina__lavoro" id="abbina-lavoro" hidden>
             <div class="abbina__foto">
-              <div class="abbina__tela"><canvas id="abbina-tela" aria-label="La foto del vestito: tocca per prendere il colore"></canvas><span class="abbina__mirino" id="abbina-mirino" hidden></span></div>
-              <p class="campo__aiuto">Tocca il vestito nella foto per prendere il colore esatto.</p>
+              <div class="abbina__tela"><canvas id="abbina-tela" aria-label="La foto del vestito: tocca per prendere un colore"></canvas><span class="abbina__mirino" id="abbina-mirino" hidden></span></div>
+              <p class="campo__aiuto">Tocca il vestito nella foto per prendere un colore preciso.</p>
             </div>
             <div class="abbina__colori">
-              <p class="abbina__titolo">Colori nella foto</p>
-              <div class="abbina__palette" id="abbina-palette" role="group" aria-label="Colori trovati nella foto"></div>
+              <p class="abbina__titolo">Colori del capo</p>
+              <div class="abbina__palette" id="abbina-palette" role="group" aria-label="Colori trovati nel vestito"></div>
+              <p class="campo__aiuto">Scegli dove usarlo, poi tocca un colore.</p>
             </div>
           </div>
-          <div class="abbina__scelto">
-            <span class="abbina__campione" id="abbina-campione"></span>
-            <label>Colore del vestito
-              <span class="abbina__riga"><input type="color" id="abbina-colore" value="#6b1e2a" aria-label="Scegli il colore a mano"><input type="text" id="abbina-hex" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#RRGGBB" aria-label="Codice esadecimale del colore"></span>
+          <div class="abbina__caselle" role="radiogroup" aria-label="Dove usare il colore">
+            <label class="abbina__casella">
+              <input type="radio" name="abbina-dove" value="copertina" checked>
+              <span class="abbina__campione" id="abbina-campione-copertina"></span>
+              <span class="abbina__casella-testo"><strong>Copertina</strong>
+                <span class="abbina__riga"><input type="color" id="abbina-colore-copertina" value="#6b1e2a" aria-label="Colore della copertina a mano"><input type="text" id="abbina-hex-copertina" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#RRGGBB" aria-label="Codice del colore della copertina"></span>
+              </span>
+            </label>
+            <label class="abbina__casella">
+              <input type="radio" name="abbina-dove" value="scritta">
+              <span class="abbina__campione" id="abbina-campione-scritta"></span>
+              <span class="abbina__casella-testo"><strong>Scritta</strong>
+                <span class="abbina__riga"><input type="color" id="abbina-colore-scritta" value="#c9a24a" aria-label="Colore della scritta a mano"><input type="text" id="abbina-hex-scritta" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#RRGGBB" aria-label="Codice del colore della scritta"></span>
+              </span>
             </label>
           </div>
-          <div id="abbina-risultati" hidden>
-            <p class="abbina__titolo">Le copertine più vicine al tuo vestito</p>
-            <ul class="abbina__lista" id="abbina-lista"></ul>
+          <div class="abbina__proposte" id="abbina-risultati" hidden>
+            <div class="abbina__proposta">
+              <p class="abbina__titolo">Con i nostri materiali, al prezzo normale</p>
+              <p class="abbina__spiega" id="abbina-scritta-materiali"></p>
+              <ul class="abbina__lista" id="abbina-lista"></ul>
+            </div>
+            <div class="abbina__proposta abbina__proposta--hex">
+              <p class="abbina__titolo">Nel colore esatto, {{ dati.abbinamento.prezzo_hex|euro }} in più a copia</p>
+              <div class="abbina__hex">
+                <span class="abbina__cop abbina__cop--grande" id="abbina-hex-anteprima"><span>Aa</span></span>
+                <p class="abbina__spiega" id="abbina-hex-testo"></p>
+              </div>
+              <button type="button" class="bottone bottone--piccolo" id="abbina-hex-scegli">Scegli il colore esatto</button>
+            </div>
           </div>
-          <label class="interruttore">
-            <input type="checkbox" id="abbinamento">
-            <span>Abbinamento al vestito (+ {{ dati.abbinamento.prezzo|euro }} a copia): la foto arriva in bottega con l'ordine e confrontiamo il colore sul campionario vero prima di stampare.</span>
-          </label>
         </div>
       </details>
       <div class="filtri">

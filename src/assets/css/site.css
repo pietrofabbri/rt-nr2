@@ -440,3 +440,39 @@ input[type="date"] { font: inherit; color: var(--ink); background: var(--paper);
 
 .abbina-home__testo { max-width: 44rem; }
 .abbina-home__prezzo { font-weight: 650; }
+
+/* Colori del vestito: caselle copertina e scritta, proposte, colore esatto */
+.abbina__caselle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+.abbina__casella { position: relative; display: flex; align-items: center; gap: .75rem; padding: .7rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.abbina__casella > input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.abbina__casella:has(> input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.abbina__casella:has(> input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+.abbina__casella-testo { display: flex; flex-direction: column; gap: .3rem; font-size: .9rem; min-width: 0; }
+.abbina__casella input[type="color"] { width: 2.4rem; height: 2.3rem; padding: .1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); cursor: pointer; flex: none; }
+.abbina__casella input[type="text"] { width: 6.5rem; padding: .45rem .55rem; font-variant-numeric: tabular-nums; text-transform: uppercase; }
+.abbina__campione--vuoto { background: repeating-linear-gradient(45deg, var(--surface) 0 6px, var(--line) 6px 7px) !important; }
+.abbina__colore--copertina { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.abbina__colore--copertina::after { content: "copertina"; font-size: .7rem; color: var(--muted); }
+.abbina__colore--scritta::after { content: "scritta"; font-size: .7rem; color: var(--muted); }
+.abbina__proposte { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: .75rem; }
+.abbina__proposta { padding: .9rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-direction: column; gap: .6rem; }
+.abbina__proposta .abbina__titolo { margin: 0; }
+.abbina__proposta .abbina__lista { margin: 0; }
+.abbina__proposta .abbina__lista li { background: var(--surface); }
+.abbina__proposta--hex { border-color: var(--accent); }
+.abbina__proposta--hex .bottone { align-self: flex-start; }
+.abbina__hex { display: flex; gap: .8rem; align-items: center; }
+.abbina__cop--grande { width: 4rem; height: 5.4rem; display: grid; place-items: center; font-family: "Libre Caslon Display", "GFS Baskerville", Georgia, serif; font-size: 1.3rem; }
+.hex-stato { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; padding: .8rem 1rem; margin: 0 0 1rem; background: var(--mark); border-radius: var(--radius); font-size: .95rem; clear: both; }
+.hex-stato__campioni { display: inline-flex; }
+.hex-stato__campioni span { width: 1.4rem; height: 1.4rem; border-radius: 50%; box-shadow: 0 0 0 2px var(--mark), inset 0 0 0 1px rgba(0,0,0,.2); }
+.hex-stato__campioni span + span { margin-left: -.35rem; }
+#hex-stato-testo { flex: 1; min-width: 12rem; }
+
+/* Copertina stampata nel colore esatto: liscia, scritta stampata a colore pieno */
+.libro[data-finitura="stampata"] .libro__piatto::after { background: linear-gradient(180deg, rgba(255,255,255,.06), transparent 30%); }
+.libro--stampato .libro__piatto p { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--foil); }
+
+@media (max-width: 700px) {
+  .abbina__caselle, .abbina__proposte { grid-template-columns: 1fr; }
+}

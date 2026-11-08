@@ -1,5 +1,7 @@
-// Abbinamento della copertina al colore del vestito.
-// La foto resta nel browser: si legge il colore, si cercano le copertine più vicine (CIEDE2000).
+// Trova i colori del vestito: da uno screenshot o da una foto ricava i colori del capo,
+// che si possono usare per la copertina e per la scritta.
+// Gratis con i materiali del catalogo; il colore esatto (stampato) costa di più ed è gestito da configura.js.
+// L'immagine resta nel browser.
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var form = document.getElementById("configuratore");
@@ -7,12 +9,15 @@
   var ctx = tela.getContext("2d", { willReadFrequently: true });
   var dati = null;
   var copertine = [];
+  var foil = [];
+  var scelta = { copertina: null, scritta: null };
 
   fetch("assets/catalogo.json").then(function (r) { return r.json(); }).then(function (d) {
     dati = d;
     copertine = d.copertine.filter(function (c) { return c.disponibile; }).map(function (c) {
       return { c: c, lab: lab(hexRgb(c.colore)) };
     });
+    foil = d.colori_testo.map(function (t) { return { nome: t.nome, colore: t.colore, lab: lab(hexRgb(t.colore)) }; });
   });
 
   // ---- Colori -------------------------------------------------------------
@@ -54,62 +59,119 @@
   function croma(l) { return Math.hypot(l[1], l[2]); }
   function tono(l) { return (Math.atan2(l[2], l[1]) * 180 / Math.PI + 360) % 360; }
 
-  // Scritta consigliata: contrasto sui colori chiari, argento sui freddi, oro sui caldi e sul nero.
-  function scritta(l) {
+  // Scritta consigliata quando il cliente non ha scelto un colore per la scritta.
+  function scrittaConsigliata(l) {
     var L = l[0], C = croma(l), h = tono(l);
     if (L > 75) return C > 12 && (h > 330 || h < 45) ? "Oro rosa" : "Bronzo";
     if (C < 8) return L < 35 ? "Oro" : "Argento";
     if (h >= 200 && h <= 320) return "Argento";
     return "Oro";
   }
+  function foilPiuVicino(hex) {
+    var l = lab(hexRgb(hex));
+    return foil.slice().sort(function (a, b) { return deltaE(l, a.lab) - deltaE(l, b.lab); })[0];
+  }
 
-  // ---- Foto ---------------------------------------------------------------
+  // ---- Immagine -------------------------------------------------------------
   function messaggio(t, errore) {
     var m = $("abbina-messaggio");
     m.textContent = t || "";
     m.classList.toggle("abbina__messaggio--errore", !!errore);
   }
 
-  function disegna(img) {
-    var max = 520, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-    tela.width = Math.round(img.naturalWidth * k);
-    tela.height = Math.round(img.naturalHeight * k);
-    ctx.drawImage(img, 0, 0, tela.width, tela.height);
-    $("abbina-lavoro").hidden = false;
-    $("abbina-mirino").hidden = true;
-    palette();
-  }
-
   function caricaFile(file) {
     if (!file) return;
-    if (!/^image\//.test(file.type)) { messaggio("Serve una foto o uno screenshot (JPG o PNG).", true); return; }
+    if (!/^image\//.test(file.type)) { messaggio("Serve uno screenshot o una foto (JPG o PNG).", true); return; }
     var url = URL.createObjectURL(file);
     var img = new Image();
-    img.onload = function () { disegna(img); URL.revokeObjectURL(url); messaggio(""); };
-    img.onerror = function () { messaggio("Non riusciamo a leggere questa immagine. Prova con un JPG o PNG, oppure con uno screenshot.", true); };
+    img.onload = function () {
+      var max = 520, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      tela.width = Math.round(img.naturalWidth * k);
+      tela.height = Math.round(img.naturalHeight * k);
+      ctx.drawImage(img, 0, 0, tela.width, tela.height);
+      URL.revokeObjectURL(url);
+      $("abbina-lavoro").hidden = false;
+      $("abbina-mirino").hidden = true;
+      messaggio("");
+      trovaColori();
+    };
+    img.onerror = function () { messaggio("Non riusciamo a leggere questa immagine. Prova con uno screenshot in PNG o JPG.", true); };
     img.src = url;
   }
 
-  // Colori principali della parte centrale della foto, con k-means nello spazio Lab.
-  function palette() {
-    var w = tela.width, h = tela.height;
-    var dati_ = ctx.getImageData(Math.round(w * 0.15), Math.round(h * 0.1), Math.round(w * 0.7), Math.round(h * 0.85)).data;
-    var punti = [];
-    var passo = Math.max(1, Math.floor(dati_.length / 4 / 4000)) * 4;
-    for (var i = 0; i < dati_.length; i += passo) {
-      if (dati_[i + 3] < 200) continue;
-      punti.push({ rgb: [dati_[i], dati_[i + 1], dati_[i + 2]], lab: lab([dati_[i], dati_[i + 1], dati_[i + 2]]) });
+  function pixel(x, y, w, h, conPosizione) {
+    var d = ctx.getImageData(x, y, w, h).data, out = [];
+    var passo = Math.max(1, Math.floor(d.length / 4 / 6000)) * 4;
+    for (var i = 0; i < d.length; i += passo) {
+      if (d[i + 3] <= 200) continue;
+      var rgb = [d[i], d[i + 1], d[i + 2]];
+      if (conPosizione) { var n = i / 4; out.push({ rgb: rgb, x: x + n % w, y: y + Math.floor(n / w) }); }
+      else out.push(rgb);
     }
-    var k = 6, centri = [];
+    return out;
+  }
+
+  // Lo sfondo è il colore più comune lungo i bordi dell'immagine.
+  function sfondo() {
+    var w = tela.width, h = tela.height, b = Math.max(2, Math.round(Math.min(w, h) * 0.04));
+    var bordo = pixel(0, 0, w, b).concat(pixel(0, h - b, w, b), pixel(0, 0, b, h), pixel(w - b, 0, b, h));
+    var canali = [0, 1, 2].map(function (k) { return bordo.map(function (p) { return p[k]; }).sort(function (a, c) { return a - c; }); });
+    return lab(canali.map(function (a) { return a[a.length >> 1]; }));
+  }
+
+  // Tiene solo i colori del capo: dentro il riquadro occupato dal colore principale (così pulsanti e
+  // scritte del negozio restano fuori) e non sfumature di bordo tra il capo e lo sfondo.
+  function soloSulCapo(colori, fondo) {
+    if (!colori.length) return colori;
+    var princ = colori[0];
+    var xs = princ.punti.map(function (p) { return p.x; }).sort(function (a, b) { return a - b; });
+    var ys = princ.punti.map(function (p) { return p.y; }).sort(function (a, b) { return a - b; });
+    var q = function (a, f) { return a[Math.floor((a.length - 1) * f)]; };
+    var mx = (q(xs, 0.98) - q(xs, 0.02)) * 0.08, my = (q(ys, 0.98) - q(ys, 0.02)) * 0.08;
+    var box = { x0: q(xs, 0.02) - mx, x1: q(xs, 0.98) + mx, y0: q(ys, 0.02) - my, y1: q(ys, 0.98) + my };
+    var dentro = function (c) {
+      var n = c.punti.filter(function (p) { return p.x >= box.x0 && p.x <= box.x1 && p.y >= box.y0 && p.y <= box.y1; }).length;
+      return n / c.punti.length > 0.7;
+    };
+    // Una sfumatura sta sulla linea tra due colori più presenti (o tra un colore e lo sfondo).
+    var traDue = function (c, a, z) {
+        var v = [z[0] - a.lab[0], z[1] - a.lab[1], z[2] - a.lab[2]];
+        var u = [c.lab[0] - a.lab[0], c.lab[1] - a.lab[1], c.lab[2] - a.lab[2]];
+        var vv = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+        var t = (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / vv;
+        if (t < 0.12 || t > 0.88) return false;
+        var d = Math.hypot(u[0] - t * v[0], u[1] - t * v[1], u[2] - t * v[2]);
+        return d < 7;
+    };
+    var sfumatura = function (c, i) {
+      var prima = colori.slice(0, i).filter(function (a) { return a.quota >= c.quota; });
+      return prima.some(function (a) {
+        return traDue(c, a, fondo) || prima.some(function (z) { return z !== a && traDue(c, a, z.lab); });
+      });
+    };
+    var tenuti = colori.filter(function (c, i) { return i === 0 || (dentro(c) && !sfumatura(c, i)); });
+    var tot = tenuti.reduce(function (s, c) { return s + c.quota; }, 0);
+    tenuti.forEach(function (c) { c.quota = c.quota / tot; });
+    return tenuti.filter(function (c) { return c.quota > 0.03; });
+  }
+
+  // I colori del capo: k-means in Lab nella parte centrale, sfondo escluso, sfumature unite.
+  function trovaColori() {
+    var w = tela.width, h = tela.height;
+    var punti = pixel(0, 0, w, h, true).map(function (p) { p.lab = lab(p.rgb); return p; });
+    var fondo = sfondo();
+    punti = punti.filter(function (p) { return deltaE(p.lab, fondo) > 10; });
+    if (punti.length < 50) { messaggio("Non troviamo il vestito nella foto. Tocca il vestito per prendere il colore.", true); return; }
+    var k = Math.min(8, punti.length), centri = [];
     for (var c = 0; c < k; c++) centri.push(punti[Math.floor((c + 0.5) * punti.length / k)].lab.slice());
     var gruppi;
-    for (var it = 0; it < 10; it++) {
+    for (var it = 0; it < 12; it++) {
       gruppi = centri.map(function () { return []; });
       punti.forEach(function (p) {
         var best = 0, bd = Infinity;
         centri.forEach(function (ce, j) {
-          var d = Math.pow(p.lab[0] - ce[0], 2) + Math.pow(p.lab[1] - ce[1], 2) + Math.pow(p.lab[2] - ce[2], 2);
-          if (d < bd) { bd = d; best = j; }
+          var dd = Math.pow(p.lab[0] - ce[0], 2) + Math.pow(p.lab[1] - ce[1], 2) + Math.pow(p.lab[2] - ce[2], 2);
+          if (dd < bd) { bd = dd; best = j; }
         });
         gruppi[best].push(p);
       });
@@ -120,20 +182,18 @@
         return s.map(function (v) { return v / g.length; });
       });
     }
-    var colori = gruppi.map(function (g) {
-      if (!g.length) return null;
+    var colori = gruppi.filter(function (g) { return g.length; }).map(function (g) {
       var s = [0, 0, 0];
       g.forEach(function (p) { s[0] += p.rgb[0]; s[1] += p.rgb[1]; s[2] += p.rgb[2]; });
       var rgb = s.map(function (v) { return v / g.length; });
-      return { hex: rgbHex(rgb[0], rgb[1], rgb[2]), quota: g.length / punti.length, lab: lab(rgb) };
-    }).filter(Boolean).sort(function (a, b) { return b.quota - a.quota; });
-    // Le sfumature quasi uguali (ombre dello stesso tessuto) diventano un colore solo.
+      return { hex: rgbHex(rgb[0], rgb[1], rgb[2]), quota: g.length / punti.length, lab: lab(rgb), punti: g };
+    }).sort(function (a, b) { return b.quota - a.quota; });
     var uniti = [];
     colori.forEach(function (col) {
-      var simile = uniti.filter(function (u) { return deltaE(u.lab, col.lab) < 8; })[0];
-      if (simile) simile.quota += col.quota; else uniti.push(col);
+      var simile = uniti.filter(function (u) { return deltaE(u.lab, col.lab) < 9; })[0];
+      if (simile) { simile.quota += col.quota; simile.punti = simile.punti.concat(col.punti); } else uniti.push(col);
     });
-    colori = uniti.filter(function (x) { return x.quota > 0.03; });
+    colori = soloSulCapo(uniti.sort(function (a, b) { return b.quota - a.quota; }), fondo);
 
     var box = $("abbina-palette");
     box.textContent = "";
@@ -141,24 +201,28 @@
       var b = document.createElement("button");
       b.type = "button";
       b.className = "abbina__colore";
+      b.dataset.hex = col.hex;
       b.style.setProperty("--c", col.hex);
-      b.setAttribute("aria-pressed", "false");
-      b.setAttribute("aria-label", col.hex + ", " + Math.round(col.quota * 100) + "% della foto");
-      b.innerHTML = "<span></span>" + col.hex;
-      b.addEventListener("click", function () { scegli(col.hex); });
+      b.setAttribute("aria-label", col.hex + ", " + Math.round(col.quota * 100) + "% del capo");
+      var dot = document.createElement("span");
+      b.appendChild(dot);
+      b.appendChild(document.createTextNode(col.hex + " " + Math.round(col.quota * 100) + "%"));
+      b.addEventListener("click", function () { assegna(dove(), col.hex); });
       box.appendChild(b);
     });
-    // Proposta iniziale: il colore più presente che non sia lo sfondo bianco o grigio.
-    var proposta = colori.filter(function (c) { return !(c.lab[0] > 88 && croma(c.lab) < 8); })[0] || colori[0];
-    if (proposta) scegli(proposta.hex);
+    // Proposta iniziale: il colore principale per la copertina, un secondo colore ben distinto per la scritta.
+    if (colori[0]) assegna("copertina", colori[0].hex);
+    var secondo = colori.slice(1).filter(function (c) { return deltaE(c.lab, colori[0].lab) > 20; })[0];
+    if (secondo) assegna("scritta", secondo.hex); else assegna("scritta", null);
+    $("abbina-risultati").hidden = false;
   }
 
   tela.addEventListener("click", function (e) {
     var r = tela.getBoundingClientRect();
     var x = Math.round((e.clientX - r.left) * tela.width / r.width);
     var y = Math.round((e.clientY - r.top) * tela.height / r.height);
-    var lato = 7, x0 = Math.max(0, x - 3), y0 = Math.max(0, y - 3);
-    var px = ctx.getImageData(x0, y0, Math.min(lato, tela.width - x0), Math.min(lato, tela.height - y0)).data;
+    var x0 = Math.max(0, x - 3), y0 = Math.max(0, y - 3);
+    var px = ctx.getImageData(x0, y0, Math.min(7, tela.width - x0), Math.min(7, tela.height - y0)).data;
     var ch = [[], [], []];
     for (var i = 0; i < px.length; i += 4) { ch[0].push(px[i]); ch[1].push(px[i + 1]); ch[2].push(px[i + 2]); }
     var med = ch.map(function (a) { a.sort(function (p, q) { return p - q; }); return a[a.length >> 1]; });
@@ -166,129 +230,122 @@
     m.hidden = false;
     m.style.left = (e.clientX - r.left) + "px";
     m.style.top = (e.clientY - r.top) + "px";
-    scegli(rgbHex(med[0], med[1], med[2]));
+    assegna(dove(), rgbHex(med[0], med[1], med[2]));
   });
 
-  // ---- Scelta del colore e copertine vicine ---------------------------------
-  function scegli(hex) {
-    hex = hex.toUpperCase();
-    $("abbina-hex").value = hex;
-    $("abbina-colore").value = hex.toLowerCase();
-    $("abbina-campione").style.background = hex;
+  // ---- Copertina e scritta ----------------------------------------------------
+  function dove() { return form.querySelector('input[name="abbina-dove"]:checked').value; }
+
+  function assegna(casella, hex) {
+    scelta[casella] = hex ? hex.toUpperCase() : null;
+    var campione = $("abbina-campione-" + casella);
+    campione.style.background = scelta[casella] || "";
+    campione.classList.toggle("abbina__campione--vuoto", !scelta[casella]);
+    $("abbina-hex-" + casella).value = scelta[casella] || "";
+    if (scelta[casella]) $("abbina-colore-" + casella).value = scelta[casella].toLowerCase();
     document.querySelectorAll(".abbina__colore").forEach(function (b) {
-      b.setAttribute("aria-pressed", b.style.getPropertyValue("--c").toUpperCase() === hex ? "true" : "false");
+      b.classList.toggle("abbina__colore--copertina", b.dataset.hex === scelta.copertina);
+      b.classList.toggle("abbina__colore--scritta", b.dataset.hex === scelta.scritta);
     });
-    trova(hex);
+    proposte();
   }
 
   function giudizio(d) {
-    if (d < 3) return "Quasi identico";
-    if (d < 6) return "Molto vicino";
-    if (d < 12) return "Vicino";
-    return "Il più vicino che abbiamo";
+    if (d < 3) return "Quasi identica";
+    if (d < 6) return "Molto vicina";
+    if (d < 12) return "Vicina";
+    return "La più vicina che abbiamo";
   }
 
-  function trova(hex) {
-    if (!dati) return;
-    var l = lab(hexRgb(hex));
+  function proposte() {
+    if (!dati || !scelta.copertina) return;
+    $("abbina-risultati").hidden = false;
+    var l = lab(hexRgb(scelta.copertina));
+    var f = scelta.scritta ? foilPiuVicino(scelta.scritta).nome : null;
+
+    $("abbina-scritta-materiali").textContent = scelta.scritta
+      ? "Scritta in " + f.toLowerCase() + ", la più vicina al colore scelto: la scritta a caldo esiste in oro, oro rosa, argento e bronzo."
+      : "Scritta consigliata per ogni copertina. Puoi anche scegliere un colore per la scritta qui sopra.";
     var vicine = copertine.map(function (x) { return { c: x.c, lab: x.lab, d: deltaE(l, x.lab) }; })
-      .sort(function (a, b) { return a.d - b.d; }).slice(0, 4);
+      .sort(function (a, b) { return a.d - b.d; }).slice(0, 3);
     var lista = $("abbina-lista");
     lista.textContent = "";
     vicine.forEach(function (v) {
-      var sc = scritta(v.lab);
+      var sc = f || scrittaConsigliata(v.lab);
       var li = document.createElement("li");
-      li.innerHTML =
-        '<span class="abbina__cop" style="--cop:' + v.c.colore + '"></span>' +
-        '<span class="abbina__info"><strong></strong><span class="abbina__dettagli"></span></span>' +
-        '<button type="button" class="bottone bottone--piccolo">Usa questa</button>';
-      li.querySelector("strong").textContent = v.c.nome;
-      li.querySelector(".abbina__dettagli").textContent = giudizio(v.d) + ". " + Libro.euro(v.c.prezzo) + ", scritta consigliata: " + sc.toLowerCase() + ".";
-      li.querySelector("button").addEventListener("click", function () { usa(v.c, sc); });
+      var cop = document.createElement("span");
+      cop.className = "abbina__cop";
+      cop.style.setProperty("--cop", v.c.colore);
+      var info = document.createElement("span");
+      info.className = "abbina__info";
+      var nome = document.createElement("strong");
+      nome.textContent = v.c.nome;
+      var det = document.createElement("span");
+      det.className = "abbina__dettagli";
+      det.textContent = giudizio(v.d) + ". " + Libro.euro(v.c.prezzo) + ", scritta in " + sc.toLowerCase() + ".";
+      info.appendChild(nome);
+      info.appendChild(det);
+      var bt = document.createElement("button");
+      bt.type = "button";
+      bt.className = "bottone bottone--piccolo";
+      bt.textContent = "Usa questa";
+      bt.addEventListener("click", function () { usaMateriale(v.c, sc); });
+      li.appendChild(cop);
+      li.appendChild(info);
+      li.appendChild(bt);
       lista.appendChild(li);
     });
-    $("abbina-risultati").hidden = false;
+
+    var scrittaHex = scelta.scritta || (foil.filter(function (x) { return x.nome === scrittaConsigliata(l); })[0] || foil[0]).colore;
+    var ant = $("abbina-hex-anteprima");
+    ant.style.setProperty("--cop", scelta.copertina);
+    ant.style.color = scrittaHex;
+    $("abbina-hex-testo").textContent = "Copertina stampata esattamente nel colore " + scelta.copertina +
+      (scelta.scritta ? " e scritta nel colore " + scelta.scritta : " e scritta in " + scrittaConsigliata(l).toLowerCase() + " a caldo") +
+      ". La stampiamo e plastifichiamo in bottega: finitura liscia, senza la grana dei materiali.";
   }
 
-  function usa(c, sc) {
+  function usaMateriale(c, sc) {
     var cop = form.querySelector('input[name="copertina"][value="' + c.codice + '"]');
     var tessera = cop.closest(".tessera");
     if (tessera.hidden) document.getElementById("azzera-filtri").click();
     cop.checked = true;
-    var foil = form.querySelector('input[name="testo"][value="' + sc + '"]');
-    if (foil) { foil.checked = true; foil.dispatchEvent(new Event("change", { bubbles: true })); }
-    $("abbinamento").checked = true;
-    $("abbinamento").dispatchEvent(new Event("change", { bubbles: true }));
+    cop.dispatchEvent(new Event("change", { bubbles: true }));
+    var r = form.querySelector('input[name="testo"][value="' + sc + '"]');
+    if (r) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
     var griglia = $("griglia");
     griglia.scrollTop = tessera.offsetTop - griglia.offsetTop - 8;
-    messaggio("Fatto: " + c.nome + " con scritta " + sc.toLowerCase() + ". Abbinamento aggiunto all'ordine.");
+    messaggio("Fatto: " + c.nome + " con scritta in " + sc.toLowerCase() + ", al prezzo normale.");
   }
 
-  // ---- Ingressi -------------------------------------------------------------
-  $("abbina-foto").addEventListener("change", function () { caricaFile(this.files[0]); });
-  $("abbina-colore").addEventListener("input", function () { scegli(this.value); });
-  $("abbina-hex").addEventListener("change", function () {
-    var v = this.value.trim();
-    if (v[0] !== "#") v = "#" + v;
-    if (/^#[0-9a-fA-F]{6}$/.test(v)) { messaggio(""); scegli(v); }
-    else messaggio("Il codice colore ha 6 cifre esadecimali, per esempio #6B1E2A.", true);
+  $("abbina-hex-scegli").addEventListener("click", function () {
+    if (!scelta.copertina) return;
+    $("hex-copertina").value = scelta.copertina;
+    $("hex-scritta").value = scelta.scritta || "";
+    if (!scelta.scritta) {
+      var nome = scrittaConsigliata(lab(hexRgb(scelta.copertina)));
+      var r = form.querySelector('input[name="testo"][value="' + nome + '"]');
+      if (r) r.checked = true;
+    }
+    form.querySelectorAll('input[name="copertina"]').forEach(function (r) { r.checked = false; });
+    form.dispatchEvent(new Event("hex-cambiato"));
+    messaggio("Fatto: colore esatto del vestito, " + Libro.euro(dati.abbinamento.prezzo_hex) + " in più a copia.");
+    $("hex-stato").scrollIntoView({ block: "nearest" });
   });
 
-  // ---- Dal link -------------------------------------------------------------
-  // Il browser non può leggere le pagine di altri siti: la pagina la legge la funzione server
-  // (abbinamento.api_link). Un link diretto a un'immagine si prova anche senza server.
-  function eImmagine(url) {
-    return /\.(jpe?g|png|webp|avif|gif)(\?|#|$)/i.test(url) || /(^|\.)ztat\.net$/i.test(new URL(url).hostname);
-  }
-
-  function nomeNegozio(url) {
-    return new URL(url).hostname.replace(/^www\./, "");
-  }
-
-  function consiglioCopia(url) {
-    messaggio("Da " + nomeNegozio(url) + " non riusciamo a prendere la foto in automatico. Copia la foto del vestito dalla pagina del negozio (tasto destro o tieni premuto, Copia immagine) e incollala nel riquadro «Copia e incolla la foto».", true);
-    $("abbina-incolla").focus();
-  }
-
-  function immagineDiretta(url) {
-    return new Promise(function (ok, ko) {
-      var img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = function () {
-        try { disegna(img); ok(); } catch (e) { ko(e); }
-      };
-      img.onerror = ko;
-      img.src = url;
+  // ---- Ingressi -------------------------------------------------------------
+  ["copertina", "scritta"].forEach(function (casella) {
+    $("abbina-colore-" + casella).addEventListener("input", function () { assegna(casella, this.value); });
+    $("abbina-hex-" + casella).addEventListener("change", function () {
+      var v = this.value.trim();
+      if (!v) { assegna(casella, null); return; }
+      if (v[0] !== "#") v = "#" + v;
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) { messaggio(""); assegna(casella, v); }
+      else messaggio("Il codice colore ha 6 cifre esadecimali, per esempio #6B1E2A.", true);
     });
-  }
+  });
+  $("abbina-foto").addEventListener("change", function () { caricaFile(this.files[0]); });
 
-  function daServer(url) {
-    var api = dati && dati.abbinamento.api_link;
-    if (!api) return Promise.reject(new Error("nessun server"));
-    var param = eImmagine(url) ? "img" : "url";
-    return fetch(api + "?" + param + "=" + encodeURIComponent(url))
-      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.blob(); })
-      .then(function (blob) {
-        if (!/^image\//.test(blob.type)) throw new Error("non immagine");
-        caricaFile(new File([blob], "vestito", { type: blob.type }));
-      });
-  }
-
-  function daLink(url) {
-    url = (url || "").trim();
-    var valido = false;
-    try { valido = /^https?:$/.test(new URL(url).protocol); } catch (e) { valido = false; }
-    if (!valido) { messaggio("Incolla l'indirizzo completo della pagina del vestito, che inizia con https://", true); return; }
-    messaggio("Cerco la foto del vestito…");
-    daServer(url)
-      .catch(function () { if (eImmagine(url)) return immagineDiretta(url).then(function () { messaggio(""); }); throw new Error("pagina"); })
-      .catch(function () { consiglioCopia(url); });
-  }
-
-  $("abbina-url-vai").addEventListener("click", function () { daLink($("abbina-url").value); });
-  $("abbina-url").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); daLink(this.value); } });
-
-  // ---- Incolla e trascina ------------------------------------------------------
   function immagineDa(dt) {
     if (!dt) return null;
     for (var i = 0; i < dt.items.length; i++) {
@@ -296,27 +353,14 @@
     }
     return null;
   }
-
-  var pannello = document.getElementById("abbina");
+  var pannello = $("abbina");
   document.addEventListener("paste", function (e) {
     if (!pannello.open) return;
     var file = immagineDa(e.clipboardData);
-    var dentro = e.target.id === "abbina-incolla" || e.target.id === "abbina-url";
-    if (file) {
+    if (file) { e.preventDefault(); caricaFile(file); $("abbina-incolla").textContent = ""; return; }
+    if (e.target.id === "abbina-incolla") {
       e.preventDefault();
-      caricaFile(file);
-      $("abbina-incolla").textContent = "";
-      return;
-    }
-    if (dentro) {
-      var testo = (e.clipboardData.getData("text/plain") || "").trim();
-      if (e.target.id === "abbina-incolla") {
-        e.preventDefault();
-        if (/^https?:\/\//.test(testo)) { $("abbina-url").value = testo; daLink(testo); }
-        else messaggio("Negli appunti non c'è un'immagine. Sul negozio usa «Copia immagine» sulla foto del vestito, poi incolla qui.", true);
-      } else if (/^https?:\/\//.test(testo)) {
-        setTimeout(function () { daLink($("abbina-url").value); }, 0);
-      }
+      messaggio("Negli appunti non c'è un'immagine. Sul negozio usa «Copia immagine» sulla foto del vestito, oppure fai uno screenshot.", true);
     }
   });
   $("abbina-incolla").addEventListener("input", function () { this.textContent = ""; });
@@ -332,15 +376,13 @@
   zona.addEventListener("drop", function (e) {
     e.preventDefault();
     var file = e.dataTransfer.files[0];
-    if (file) { caricaFile(file); return; }
-    var link = (e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain") || "").split("\n")[0].trim();
-    if (link) { $("abbina-url").value = link; daLink(link); }
+    if (file) caricaFile(file);
+    else messaggio("Trascina il file dell'immagine, oppure usa «Copia immagine» e incolla.", true);
   });
-})();
 
-// Arrivando da "Abbina la tesi al vestito" il pannello è già aperto.
-if (location.hash === "#abbina") {
-  var pannello = document.getElementById("abbina");
-  pannello.open = true;
-  pannello.scrollIntoView({ block: "start" });
-}
+  // Arrivando da "Trova i colori del vestito" il pannello è già aperto.
+  if (location.hash === "#abbina") {
+    pannello.open = true;
+    pannello.scrollIntoView({ block: "start" });
+  }
+})();

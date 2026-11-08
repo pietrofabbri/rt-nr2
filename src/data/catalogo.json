@@ -1079,7 +1079,8 @@
   "fonte": "Google"
  },
  "abbinamento": {
-  "prezzo": 10,
+  "prezzo_hex": 10,
+  "finitura_base_hex": "Opaco",
   "api_link": null
  }
 }

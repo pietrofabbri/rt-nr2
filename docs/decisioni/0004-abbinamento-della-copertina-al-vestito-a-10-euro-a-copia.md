@@ -1,6 +1,7 @@
 ---
 titolo: Abbinamento della copertina al vestito a 10 euro a copia
-stato: accettato
+stato: superato
+sostituito-da: "0006"
 creato: 2026-11-08
 aggiornato: 2026-11-08
 tag: [decisioni, configuratore, prezzi, abbinamento]

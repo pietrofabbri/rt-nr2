@@ -75,9 +75,43 @@
     $("conto-data").textContent = breve;
   }
 
+  // Copertina scelta: un materiale del catalogo, oppure il colore esatto del vestito (stampato, +10 € a copia).
+  function copertinaScelta() {
+    var hexC = $("hex-copertina").value;
+    if (hexC) {
+      var base = dati.finiture.filter(function (f) { return f.nome === dati.abbinamento.finitura_base_hex; })[0];
+      return { nome: "Colore esatto " + hexC, prezzo: base.prezzo, colore: hexC, finitura: "Stampata", hex: hexC };
+    }
+    var r = scelto("copertina");
+    if (!r) { r = form.querySelector('input[name="copertina"][value="CP-030"]'); r.checked = true; }
+    return perCodice[r.value];
+  }
+
+  function statoHex(c, hexS, foilRadio) {
+    var box = $("hex-stato");
+    box.hidden = !c.hex;
+    if (!c.hex) return;
+    $("hex-stato-cop").style.background = c.hex;
+    $("hex-stato-scr").style.background = hexS || (foilRadio ? foilRadio.dataset.colore : "");
+    $("hex-stato-testo").textContent = "Colore esatto del vestito: copertina " + c.hex + ", scritta " +
+      (hexS ? hexS : "in " + (foilRadio ? foilRadio.value.toLowerCase() : "oro")) + ". " +
+      Libro.euro(dati.abbinamento.prezzo_hex) + " in più a copia.";
+  }
+
+  var ultimoMateriale = "CP-030";
+  function togliHex() {
+    $("hex-copertina").value = "";
+    $("hex-scritta").value = "";
+    if (!scelto("copertina")) form.querySelector('input[name="copertina"][value="' + ultimoMateriale + '"]').checked = true;
+  }
+
   function aggiorna() {
     if (!dati) return;
-    var c = perCodice[scelto("copertina").value];
+    var c = copertinaScelta();
+    var hexS = $("hex-scritta").value;
+    var foilRadio = scelto("testo");
+    Libro.scritta(libro, hexS || (foilRadio ? foilRadio.dataset.colore : "#C9A24A"));
+    libro.classList.toggle("libro--stampato", !!hexS);
     var decoro = $("decoro").checked;
     var facciate = parseInt($("facciate").value, 10);
     var copie = Math.min(50, Math.max(1, parseInt($("copie").value, 10) || 1));
@@ -88,7 +122,8 @@
     Libro.copertina(libro, { colore: c.colore, finitura: Libro.classeFinitura(c.finitura), nome: c.nome, prezzo: Libro.euro(c.prezzo) });
     Libro.decoro(libro, decoro);
     $("riga-decoro").hidden = !decoro;
-    $("riga-abbinamento").hidden = !$("abbinamento").checked;
+    $("riga-abbinamento").hidden = !c.hex;
+    statoHex(c, hexS, foilRadio);
     $("conto-copertina").textContent = Libro.euro(c.prezzo);
     $("conto-copie").textContent = copie;
     $("conto-consegna-nome").textContent = cons.value === "ritiro" ? "Ritiro in bottega" : "Spedizione";
@@ -105,15 +140,14 @@
         : "Carica il PDF o indica il numero di facciate per vedere il totale.";
       return;
     }
-    var abbinamento = $("abbinamento").checked;
-    var copia = c.prezzo + (decoro ? dati.decoro.prezzo : 0) + (abbinamento ? dati.abbinamento.prezzo : 0) + stampa;
+    var copia = c.prezzo + (decoro ? dati.decoro.prezzo : 0) + (c.hex ? dati.abbinamento.prezzo_hex : 0) + stampa;
     var totale = copia * copie + prezzoConsegna;
     $("conto-stampa").textContent = Libro.euro(stampa);
     $("conto-copia").textContent = Libro.euro(copia);
     $("conto-totale").textContent = Libro.euro(totale);
     $("barra-totale").textContent = Libro.euro(totale);
     riepilogo.textContent = copie + (copie === 1 ? " copia" : " copie") + " in " + c.nome + ", " + facciate + " facciate, " +
-      (abbinamento ? "abbinata al vestito, " : "") + (cons.value === "ritiro" ? "ritiro in bottega" : "spedizione compresa") + ": " + Libro.euro(totale) + ".";
+      (cons.value === "ritiro" ? "ritiro in bottega" : "spedizione compresa") + ": " + Libro.euro(totale) + ".";
   }
 
   // Esito del controllo del PDF
@@ -224,7 +258,7 @@
 
   // Scritta e anteprima dei testi
   form.querySelectorAll('input[name="testo"]').forEach(function (r) {
-    r.addEventListener("change", function () { Libro.scritta(libro, r.dataset.colore); });
+    r.addEventListener("change", function () { $("hex-scritta").value = ""; Libro.scritta(libro, r.dataset.colore); });
   });
   form.querySelectorAll("[data-anteprima]").forEach(function (input) {
     input.addEventListener("input", function () {
@@ -244,6 +278,11 @@
   // Fattura
   $("vuole-fattura").addEventListener("change", function () { $("campi-fattura").hidden = !this.checked; });
 
+  form.querySelectorAll('input[name="copertina"]').forEach(function (r) {
+    r.addEventListener("change", function () { ultimoMateriale = r.value; togliHex(); });
+  });
+  $("hex-togli").addEventListener("click", function () { togliHex(); aggiorna(); });
+  form.addEventListener("hex-cambiato", aggiorna);
   form.addEventListener("change", aggiorna);
   form.addEventListener("input", function (e) { if (e.target.id !== "pdf" && e.target.id.indexOf("abbina") !== 0) aggiorna(); });
 
