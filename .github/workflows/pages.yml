@@ -39,6 +39,8 @@ jobs:
           cp "node_modules/@fontsource-variable/bricolage-grotesque/files/$B" "$D/bricolage.woff2"
           ls -la "$D"
       - run: python strumenti/build.py
+        env:
+          RT_API_COLORE: ${{ vars.API_COLORE }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

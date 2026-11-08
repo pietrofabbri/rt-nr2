@@ -397,9 +397,16 @@ input[type="date"] { font: inherit; color: var(--ink); background: var(--paper);
 .abbina[open] .abbina__nome::before { content: "−"; }
 .abbina__prezzo { font-size: .9rem; color: var(--muted); }
 .abbina__corpo { padding: 0 1.1rem 1.1rem; }
-.abbina__fonti { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 1rem; align-items: stretch; margin-bottom: .75rem; }
+.abbina__fonti { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; align-items: stretch; margin-bottom: .75rem; }
+.abbina__fonti > .abbina__fonte:first-child { grid-column: 1 / -1; }
+.abbina__fonte { display: flex; flex-direction: column; gap: .45rem; padding: .9rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+.abbina__fonte .abbina__titolo { margin: 0; }
+.abbina__spiega { font-size: .85rem; color: var(--muted); margin: 0; font-weight: 400; }
+.abbina__incolla { flex: 1; min-height: 3.2rem; border: 2px dashed var(--line); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; text-align: center; padding: .5rem; font-size: .9rem; color: var(--muted); cursor: text; caret-color: transparent; }
+.abbina__incolla:empty::before { content: attr(data-testo); }
+.abbina__incolla:focus { outline: none; border-color: var(--accent); color: var(--accent); }
+.abbina__fonte.caricamento { border-style: dashed; border-width: 2px; align-items: center; justify-content: center; text-align: center; }
 .caricamento--piccolo { padding: 1rem; margin: 0; justify-content: center; background: var(--paper); }
-.abbina__link { display: flex; flex-direction: column; gap: .4rem; font-size: .9rem; font-weight: 600; justify-content: center; }
 .abbina__riga { display: flex; gap: .5rem; align-items: center; }
 .abbina__riga input[type="url"] { flex: 1; min-width: 0; }
 .abbina__messaggio { font-size: .95rem; margin: 0 0 .75rem; min-height: 1px; }
@@ -424,8 +431,9 @@ input[type="date"] { font: inherit; color: var(--ink); background: var(--paper);
 .abbina__cop { width: 2.6rem; height: 3.4rem; flex: none; border-radius: 2px 3px 3px 2px; background: linear-gradient(90deg, rgba(0,0,0,.28) 0 12%, transparent 12%), var(--cop); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
 .abbina__info { flex: 1; display: flex; flex-direction: column; font-size: .9rem; line-height: 1.35; }
 .abbina__dettagli { color: var(--muted); }
+@media (max-width: 900px) { .abbina__fonti { grid-template-columns: 1fr; } }
 @media (max-width: 700px) {
-  .abbina__fonti, .abbina__lavoro { grid-template-columns: 1fr; }
+  .abbina__lavoro { grid-template-columns: 1fr; }
   .abbina__lista li { flex-wrap: wrap; }
   .abbina__lista .bottone { margin-left: 3.4rem; }
 }

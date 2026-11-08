@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -35,6 +36,9 @@ def main() -> None:
     a = ap.parse_args()
 
     dati = json.loads((SRC / "data" / "catalogo.json").read_text(encoding="utf-8"))
+    # Indirizzo della funzione server dell'abbinamento: variabile API_COLORE del repository.
+    if os.environ.get("RT_API_COLORE"):
+        dati["abbinamento"]["api_link"] = os.environ["RT_API_COLORE"].rstrip("/") + "/"
     prezzi_finiture = {f["nome"]: f["prezzo"] for f in dati["finiture"]}
     for c in dati["copertine"]:
         c["prezzo"] = prezzi_finiture[c["finitura"]]

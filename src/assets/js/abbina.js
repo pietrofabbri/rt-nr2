@@ -234,20 +234,107 @@
     else messaggio("Il codice colore ha 6 cifre esadecimali, per esempio #6B1E2A.", true);
   });
 
-  // Dal link del negozio serve il server del sito: il browser non può leggere pagine di altri siti.
-  $("abbina-url-vai").addEventListener("click", function () {
-    var url = $("abbina-url").value.trim();
-    if (!/^https?:\/\/[^\s]+\.[^\s]+/.test(url)) { messaggio("Incolla l'indirizzo completo della pagina del vestito, che inizia con https://", true); return; }
+  // ---- Dal link -------------------------------------------------------------
+  // Il browser non può leggere le pagine di altri siti: la pagina la legge la funzione server
+  // (abbinamento.api_link). Un link diretto a un'immagine si prova anche senza server.
+  function eImmagine(url) {
+    return /\.(jpe?g|png|webp|avif|gif)(\?|#|$)/i.test(url) || /(^|\.)ztat\.net$/i.test(new URL(url).hostname);
+  }
+
+  function nomeNegozio(url) {
+    return new URL(url).hostname.replace(/^www\./, "");
+  }
+
+  function consiglioCopia(url) {
+    messaggio("Da " + nomeNegozio(url) + " non riusciamo a prendere la foto in automatico. Copia la foto del vestito dalla pagina del negozio (tasto destro o tieni premuto, Copia immagine) e incollala nel riquadro «Copia e incolla la foto».", true);
+    $("abbina-incolla").focus();
+  }
+
+  function immagineDiretta(url) {
+    return new Promise(function (ok, ko) {
+      var img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function () {
+        try { disegna(img); ok(); } catch (e) { ko(e); }
+      };
+      img.onerror = ko;
+      img.src = url;
+    });
+  }
+
+  function daServer(url) {
     var api = dati && dati.abbinamento.api_link;
-    if (!api) {
-      messaggio("Dal link funzionerà con la versione definitiva del sito. Per ora fai uno screenshot della pagina del vestito e caricalo qui sopra.", true);
+    if (!api) return Promise.reject(new Error("nessun server"));
+    var param = eImmagine(url) ? "img" : "url";
+    return fetch(api + "?" + param + "=" + encodeURIComponent(url))
+      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.blob(); })
+      .then(function (blob) {
+        if (!/^image\//.test(blob.type)) throw new Error("non immagine");
+        caricaFile(new File([blob], "vestito", { type: blob.type }));
+      });
+  }
+
+  function daLink(url) {
+    url = (url || "").trim();
+    var valido = false;
+    try { valido = /^https?:$/.test(new URL(url).protocol); } catch (e) { valido = false; }
+    if (!valido) { messaggio("Incolla l'indirizzo completo della pagina del vestito, che inizia con https://", true); return; }
+    messaggio("Cerco la foto del vestito…");
+    daServer(url)
+      .catch(function () { if (eImmagine(url)) return immagineDiretta(url).then(function () { messaggio(""); }); throw new Error("pagina"); })
+      .catch(function () { consiglioCopia(url); });
+  }
+
+  $("abbina-url-vai").addEventListener("click", function () { daLink($("abbina-url").value); });
+  $("abbina-url").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); daLink(this.value); } });
+
+  // ---- Incolla e trascina ------------------------------------------------------
+  function immagineDa(dt) {
+    if (!dt) return null;
+    for (var i = 0; i < dt.items.length; i++) {
+      if (dt.items[i].kind === "file" && /^image\//.test(dt.items[i].type)) return dt.items[i].getAsFile();
+    }
+    return null;
+  }
+
+  var pannello = document.getElementById("abbina");
+  document.addEventListener("paste", function (e) {
+    if (!pannello.open) return;
+    var file = immagineDa(e.clipboardData);
+    var dentro = e.target.id === "abbina-incolla" || e.target.id === "abbina-url";
+    if (file) {
+      e.preventDefault();
+      caricaFile(file);
+      $("abbina-incolla").textContent = "";
       return;
     }
-    messaggio("Cerco la foto del vestito…");
-    fetch(api + "?url=" + encodeURIComponent(url))
-      .then(function (r) { if (!r.ok) throw new Error(); return r.blob(); })
-      .then(function (blob) { caricaFile(new File([blob], "vestito", { type: blob.type })); })
-      .catch(function () { messaggio("Da questo negozio non riusciamo a prendere la foto. Fai uno screenshot della pagina e caricalo qui sopra.", true); });
+    if (dentro) {
+      var testo = (e.clipboardData.getData("text/plain") || "").trim();
+      if (e.target.id === "abbina-incolla") {
+        e.preventDefault();
+        if (/^https?:\/\//.test(testo)) { $("abbina-url").value = testo; daLink(testo); }
+        else messaggio("Negli appunti non c'è un'immagine. Sul negozio usa «Copia immagine» sulla foto del vestito, poi incolla qui.", true);
+      } else if (/^https?:\/\//.test(testo)) {
+        setTimeout(function () { daLink($("abbina-url").value); }, 0);
+      }
+    }
+  });
+  $("abbina-incolla").addEventListener("input", function () { this.textContent = ""; });
+  if (window.matchMedia("(pointer: coarse)").matches) $("abbina-incolla").dataset.testo = "Tocca qui, poi Incolla";
+
+  var zona = document.querySelector(".abbina__fonte.caricamento");
+  ["dragenter", "dragover"].forEach(function (t) {
+    zona.addEventListener(t, function (e) { e.preventDefault(); zona.classList.add("caricamento--sopra"); });
+  });
+  ["dragleave", "drop"].forEach(function (t) {
+    zona.addEventListener(t, function () { zona.classList.remove("caricamento--sopra"); });
+  });
+  zona.addEventListener("drop", function (e) {
+    e.preventDefault();
+    var file = e.dataTransfer.files[0];
+    if (file) { caricaFile(file); return; }
+    var link = (e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain") || "").split("\n")[0].trim();
+    if (link) { $("abbina-url").value = link; daLink(link); }
   });
 })();
 

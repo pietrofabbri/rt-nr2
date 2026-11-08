@@ -71,19 +71,26 @@
       <details class="abbina" id="abbina">
         <summary><span class="abbina__nome">Abbina la copertina al tuo vestito</span> <span class="abbina__prezzo">+ {{ dati.abbinamento.prezzo|euro }} a copia</span></summary>
         <div class="abbina__corpo">
-          <p>Carica una foto del vestito o uno screenshot della pagina del negozio: troviamo il colore e le copertine più vicine. Basta il vestito, il viso non serve.</p>
+          <p>Dacci il vestito in uno di questi modi: troviamo il colore e le copertine più vicine. Basta il vestito, il viso non serve.</p>
           <div class="abbina__fonti">
-            <label class="caricamento caricamento--piccolo">
-              <input type="file" id="abbina-foto" accept="image/*">
-              <span class="caricamento__testo"><strong>Carica la foto</strong> o lo screenshot</span>
-            </label>
-            <div class="abbina__link">
-              <label for="abbina-url">Oppure incolla il link del vestito nel negozio online</label>
+            <div class="abbina__fonte">
+              <p class="abbina__titolo">Dal negozio online</p>
+              <label for="abbina-url" class="abbina__spiega">Incolla il link della pagina del vestito.</label>
               <div class="abbina__riga">
-                <input type="url" id="abbina-url" placeholder="https://" inputmode="url" autocomplete="off">
-                <button type="button" class="bottone bottone--piccolo" id="abbina-url-vai">Trova il colore</button>
+                <input type="url" id="abbina-url" placeholder="https://www.zalando.it/…" inputmode="url" autocomplete="off">
+                <button type="button" class="bottone bottone--piccolo" id="abbina-url-vai">Trova</button>
               </div>
             </div>
+            <div class="abbina__fonte">
+              <p class="abbina__titolo">Copia e incolla la foto</p>
+              <p class="abbina__spiega">Sulla pagina del negozio: tasto destro sulla foto del vestito, <em>Copia immagine</em>. Da telefono: tieni premuto sulla foto, <em>Copia</em>.</p>
+              <div class="abbina__incolla" id="abbina-incolla" contenteditable="true" role="textbox" aria-label="Incolla qui la foto del vestito" spellcheck="false" data-testo="Clic qui e incolla (Ctrl+V)"></div>
+            </div>
+            <label class="caricamento caricamento--piccolo abbina__fonte">
+              <input type="file" id="abbina-foto" accept="image/*">
+              <span class="abbina__titolo">Foto o screenshot</span>
+              <span class="caricamento__testo"><strong>Scegli il file</strong> o trascinalo qui</span>
+            </label>
           </div>
           <p class="abbina__messaggio" id="abbina-messaggio" aria-live="polite"></p>
           <div class="abbina__lavoro" id="abbina-lavoro" hidden>
