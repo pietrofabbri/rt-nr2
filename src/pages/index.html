@@ -8,17 +8,16 @@
 {% block contenuto %}
 <section class="apertura">
   <div class="apertura__testo">
-    <h1>La tua tesi, rilegata a mano a Ferrara.</h1>
-    <p class="apertura__sotto">Carica il PDF e scegli la copertina. Se l'ordine arriva entro le 12 di un giorno lavorativo, spesso la tesi parte in giornata, senza costi in più. Se sei a Ferrara, la ritiri gratis in bottega.</p>
+    <h1>La tua tesi, <br>rilegata a mano.</h1>
+    <p class="apertura__sotto">Carichi il PDF, scegli la copertina. Il resto lo facciamo noi, in bottega a Ferrara.</p>
     <div class="apertura__azioni">
       <a class="bottone" href="configura.html">Configura la tesi</a>
       <a class="collegamento" href="#prezzi">Vedi i prezzi</a>
     </div>
     <ul class="apertura__fatti">
-      <li>Copertine da {{ dati.prezzo_min|euro }}</li>
-      <li>Stampa a colori allo stesso prezzo del bianco e nero</li>
-      <li>Media di {{ dati.recensioni.media }} nelle recensioni su {{ dati.recensioni.fonte }}</li>
-      <li>In bottega dal {{ dati.bottega.dal }}</li>
+      <li>★ {{ dati.recensioni.media }} su {{ dati.recensioni.fonte }}</li>
+      <li>Colore al prezzo del b/n</li>
+      <li>Ritiro gratis a Ferrara</li>
     </ul>
   </div>
 
@@ -37,73 +36,46 @@
 </section>
 
 {% set es120 = dati.stampa | selectattr("da", "le", 120) | selectattr("a", "ge", 120) | first %}
-<section class="sezione perche" id="perche">
-  <h2>Perché da noi</h2>
-  <dl class="perche__lista">
-    <div>
-      <dt>Il colore costa come il bianco e nero</dt>
-      <dd>Molti servizi online fanno pagare ogni pagina a colori. Da noi una tesi di 120 pagine, anche tutta a colori, costa {{ (dati.prezzo_min + es120.prezzo)|euro }} con la copertina rigida Opaco.</dd>
-    </div>
-    <div>
-      <dt>La ritiri in bottega, gratis</dt>
-      <dd>In via Voltapaletto 25, nel centro di Ferrara. Se ordini entro le 12 spesso è pronta in giornata, e il configuratore ti dice la data garantita.</dd>
-    </div>
-    <div>
-      <dt>Fatta a mano, controllata da persone</dt>
-      <dd>Prima di stampare guardiamo il tuo file, e prima di consegnarla controlliamo ogni tesi. Il controllo è compreso nel prezzo.</dd>
-    </div>
-    <div>
-      <dt>La vedi prima di ordinare</dt>
-      <dd>Sfogli tutte le pagine del tuo PDF, vedi la copertina con il tuo titolo e sai subito prezzo e data di spedizione.</dd>
-    </div>
-    <div>
-      <dt>Nel colore del tuo vestito</dt>
-      <dd>Da uno screenshot del vestito troviamo i suoi colori e le copertine più vicine. Se vuoi proprio quel colore, la stampiamo su misura.</dd>
-    </div>
-    <div>
-      <dt>Se sbagliamo noi, la rifacciamo gratis</dt>
-      <dd>Rileghiamo in via Voltapaletto dal {{ dati.bottega.dal }}: tra i nostri lavori ci sono un messale per Papa Francesco e un volume donato al Presidente Mattarella. Se una tesi esce male per colpa nostra, la rifacciamo senza costi.</dd>
-    </div>
-  </dl>
+<section class="perche" id="perche">
+  <h2 class="perche__titolo">Sei motivi per scegliere noi</h2>
+  <ul class="numeri">
+    <li><strong>{{ (dati.prezzo_min + es120.prezzo)|euro }}</strong><span>120 pagine a colori. <br>Il colore costa come il bianco e nero.</span></li>
+    <li><strong>0 €</strong><span>Ritiro in bottega, <br>in centro a Ferrara.</span></li>
+    <li><strong>Oggi</strong><span>Ordini entro le {{ dati.ordini.ora_limite }}?<br>Spesso è pronta in giornata.</span></li>
+    <li><strong>A mano</strong><span>Ogni file e ogni tesi <br>controllati da una persona.</span></li>
+    <li><strong>Su misura</strong><span>La copertina nel colore <br>del tuo vestito.</span></li>
+    <li><strong>{{ dati.bottega.dal }}</strong><span>Legatoria artigiana. Se sbagliamo, <br>la rifacciamo gratis.</span></li>
+  </ul>
 </section>
 
 <section class="sezione" id="come-funziona">
   <h2>Come funziona</h2>
   <ol class="passi">
-    <li>
-      <h3>Carica il PDF</h3>
-      <p>Un solo file, frontespizio compreso. Il sito conta le facciate e ti avvisa se trova pagine bianche o un formato diverso dall'A4.</p>
-    </li>
-    <li>
-      <h3>Scegli la copertina</h3>
-      <p>{{ dati.copertine|length }} colori in {{ dati.finiture|length }} finiture, con la scritta in oro, oro rosa, argento o bronzo. La scritta la prendiamo dal tuo frontespizio.</p>
-    </li>
-    <li>
-      <h3>Stampiamo e rilegiamo</h3>
-      <p>Lavoriamo in ordine di data di laurea. Gli ordini arrivati entro le 12 spesso partono in giornata; al più tardi entro {{ dati.ordini.giorni_massimi_lavorazione }} giorni lavorativi.</p>
-    </li>
-    <li>
-      <h3>Ritiri o ricevi</h3>
-      <p>Ritiro gratuito in via Voltapaletto a Ferrara, oppure corriere GLS in 24-48 ore lavorative, con il codice per seguire il pacco.</p>
-    </li>
+    <li><h3>Carica il PDF</h3><p>Contiamo le pagine e controlliamo il file.</p></li>
+    <li><h3>Scegli la copertina</h3><p>{{ dati.copertine|length }} colori, scritta in oro o argento.</p></li>
+    <li><h3>La rileghiamo</h3><p>A mano, in via Voltapaletto.</p></li>
+    <li><h3>Ritiri o ricevi</h3><p>Gratis in bottega o con GLS in tutta Italia.</p></li>
   </ol>
 </section>
 
 <section class="sezione abbina-home">
   <div class="abbina-home__testo">
-    <h2>La copertina in tinta con il vestito della laurea</h2>
-    <p>Molti scelgono il colore della tesi in base a quello che indosseranno. Carica uno screenshot del vestito, da qualsiasi negozio online, o una foto: troviamo i colori del capo e li usi per la copertina e per la scritta. Ti proponiamo subito i nostri materiali più vicini, al prezzo normale.</p>
-    <p>Vuoi proprio quel colore? Stampiamo la copertina nel colore esatto del vestito, per {{ dati.abbinamento.prezzo_hex|euro }} in più a copia.</p>
-    <a class="bottone" href="configura.html#abbina">Trova i colori del tuo vestito</a>
+    <h2>In tinta con il vestito della laurea</h2>
+    <p>Uno screenshot del vestito, da qualsiasi negozio. Ti diamo i suoi colori per copertina e scritta.</p>
+    <a class="bottone" href="configura.html#abbina">Prova con il tuo vestito</a>
+  </div>
+  <div class="abbina-home__visivo" aria-hidden="true">
+    <span class="abbina-home__abito"></span>
+    <span class="abbina-home__freccia">→</span>
+    <span class="abbina-home__tesi"><span>Tesi di laurea</span></span>
   </div>
 </section>
 
 <section class="sezione sezione--bottega">
   <div class="bottega">
     <div class="bottega__testo">
-      <h2>Una legatoria vera, in via Voltapaletto</h2>
-      <p>Dietro rilegaretesi c'è Volta la carta: dal {{ dati.bottega.dal }} rileghiamo a mano tesi di laurea nel centro di Ferrara, e nel tempo siamo diventati anche casa editrice. Tra i nostri lavori ci sono un messale per Papa Francesco e un volume che un ente ha donato al Presidente Sergio Mattarella.</p>
-      <p>Prima di stampare controlliamo il tuo file, e prima di spedire controlliamo ogni tesi. Se l'errore è nostro, la rifacciamo gratis.</p>
+      <h2>Una legatoria vera, dal {{ dati.bottega.dal }}</h2>
+      <p>Nel centro di Ferrara rileghiamo a mano tesi, libri e lavori importanti: anche un messale per Papa Francesco e un volume per il Presidente Mattarella.</p>
       <a class="collegamento" href="chi-siamo.html">La nostra storia</a>
     </div>
     <div class="bottega__foto" role="img" aria-label="Spazio per una foto del laboratorio">
@@ -113,8 +85,8 @@
 </section>
 
 <section class="sezione" id="prezzi">
-  <h2>Prezzi chiari, senza sorprese</h2>
-  <p class="sezione__intro">Il prezzo di una copia è copertina più stampa. Il colore costa come il bianco e nero.</p>
+  <h2>Prezzi chiari</h2>
+  <p class="sezione__intro">Copertina + stampa. Il colore non costa di più.</p>
   <div class="prezzi">
     <div class="prezzi__blocco">
       <h3>Copertina rigida</h3>
@@ -139,27 +111,23 @@
     </div>
   </div>
   {% set es_stampa = dati.stampa | selectattr("da", "le", 120) | selectattr("a", "ge", 120) | first %}
-  <p class="esempio">Esempio: una copia in {{ cop.nome }} con 120 facciate costa {{ cop.prezzo|euro }} + {{ es_stampa.prezzo|euro }} = {{ (cop.prezzo + es_stampa.prezzo)|euro }}. La spedizione in tutta Italia è {{ dati.spedizione.prezzo|euro }} a ordine; il ritiro in bottega a Ferrara è gratis.</p>
+  <p class="esempio"><strong>120 pagine in {{ cop.nome }}: {{ (cop.prezzo + es_stampa.prezzo)|euro }}.</strong> Ritiro gratis, spedizione {{ dati.spedizione.prezzo|euro }}.</p>
 </section>
 
 <section class="sezione">
-  <h2>Domande che ci fanno spesso</h2>
+  <h2>Domande veloci</h2>
   <div class="domande">
     <details>
       <summary>Mi laureo tra pochi giorni: faccio in tempo?</summary>
-      <p>Se l'ordine arriva entro le 12 di un giorno lavorativo, spesso la tesi parte in giornata, senza sovrapprezzo, ma non possiamo garantirlo sempre. Il configuratore ti mostra la data di spedizione garantita. Il corriere consegna di solito in 24-48 ore lavorative: garantiamo la spedizione, non l'arrivo. Se sei vicino a Ferrara, il ritiro in bottega è la strada più sicura.</p>
+      <p>Quasi sempre. Prima di pagare vedi la data di spedizione garantita. Se sei vicino a Ferrara, il ritiro in bottega è la strada più veloce.</p>
     </details>
     <details>
       <summary>Il mio frontespizio va bene per la copertina?</summary>
-      <p>Usiamo la prima pagina del tuo PDF. Se serve, sistemiamo noi spaziature e impaginazione della scritta in copertina; l'interno resta come l'hai inviato.</p>
+      <p>Sì: usiamo la prima pagina del PDF e sistemiamo noi gli spazi.</p>
     </details>
     <details>
-      <summary>Posso modificare l'ordine dopo averlo inviato?</summary>
-      <p>Il file entra subito in lavorazione, quindi controllalo bene prima di caricarlo. Se hai sbagliato qualcosa, chiamaci subito allo <a href="tel:+390532208932">0532 208932</a>: se la tesi non è ancora stampata, la fermiamo.</p>
-    </details>
-    <details>
-      <summary>E se qualcosa non va?</summary>
-      <p>Controlliamo ogni tesi prima di spedirla. Se l'errore è nostro, per esempio un nome sbagliato in copertina, la rifacciamo gratis.</p>
+      <summary>Ho sbagliato il file, cosa faccio?</summary>
+      <p>Chiamaci subito allo <a href="tel:+390532208932">0532 208932</a>: se non è ancora stampata, la fermiamo.</p>
     </details>
   </div>
   <a class="collegamento" href="domande.html">Tutte le domande</a>

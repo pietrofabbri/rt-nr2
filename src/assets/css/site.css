@@ -533,9 +533,20 @@ input[type="date"] { font: inherit; color: var(--ink); background: var(--paper);
 }
 
 /* Perché da noi */
-.perche__lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3rem; margin: 1rem 0 0; }
-.perche__lista div { padding: 1.25rem 0; border-top: 1px solid var(--line); }
-.perche__lista dt { font-family: var(--display); font-size: 1.45rem; line-height: 1.2; margin-bottom: .45rem; }
-.perche__lista dd { margin: 0; color: var(--muted); max-width: 34rem; }
-@media (max-width: 760px) { .perche__lista { grid-template-columns: minmax(0, 1fr); } }
-.testo--ferrara .bottone { margin-bottom: .5rem; }
+.perche { background: var(--ink); color: var(--paper); padding: clamp(3rem, 7vw, 5.5rem) clamp(1rem, 5vw, 4rem); margin: 0 calc(50% - 50vw); }
+.perche__titolo { max-width: 72rem; margin: 0 auto 2rem; font-family: var(--display); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 400; }
+.numeri { list-style: none; padding: 0; margin: 0 auto; max-width: 72rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem 2rem; }
+.numeri li { border-top: 1px solid color-mix(in srgb, currentColor 30%, transparent); padding-top: 1rem; }
+.numeri strong { display: block; font-family: var(--display); font-weight: 400; font-size: clamp(2.6rem, 6vw, 4rem); line-height: 1; color: var(--mark); margin-bottom: .6rem; }
+.numeri span { font-size: 1.02rem; opacity: .85; }
+.numeri--chiari { margin: 2rem 0; }
+.numeri--chiari strong { color: var(--accent); }
+@media (max-width: 760px) { .numeri { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1.25rem; } .numeri span br { display: none; } .numeri strong { font-size: 2.3rem; } }
+
+/* Vestito in home */
+.abbina-home { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 2rem; align-items: center; }
+.abbina-home__visivo { display: flex; align-items: center; justify-content: center; gap: 1.25rem; }
+.abbina-home__abito { width: 110px; height: 170px; background: #7a2433; clip-path: polygon(30% 0, 70% 0, 72% 12%, 64% 30%, 100% 100%, 0 100%, 36% 30%, 28% 12%); }
+.abbina-home__freccia { font-size: 2rem; color: var(--muted); }
+.abbina-home__tesi { width: 120px; height: 170px; background: #7a2433; color: #d9b36a; display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--display); font-size: .9rem; padding: 1rem; box-shadow: 6px 6px 0 rgba(0,0,0,.12); border-radius: 2px 4px 4px 2px; }
+@media (max-width: 760px) { .abbina-home { grid-template-columns: minmax(0, 1fr); } .abbina-home__visivo { order: -1; } }

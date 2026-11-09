@@ -4,23 +4,17 @@
 {% block descrizione %}Stampa e rilegatura a mano della tesi di laurea nel centro di Ferrara. Ordini online e ritiri gratis in via Voltapaletto 25, spesso in giornata.{% endblock %}
 {% block contenuto %}
 <article class="testo testo--ferrara">
-  <h1>Rilegatura tesi a Ferrara, con ritiro in bottega</h1>
-  <p class="apertura__sotto">Siamo in via Voltapaletto 25, nel centro di Ferrara. Configuri la tesi online, carichi il PDF e la ritiri da noi, senza spese di spedizione.</p>
+  <h1>Rilegatura tesi a Ferrara</h1>
+  <p class="apertura__sotto">Ordini online, ritiri in bottega. Gratis.</p>
+  <ul class="numeri numeri--chiari">
+    <li><strong>0 €</strong><span>Ritiro in via Voltapaletto 25</span></li>
+    <li><strong>Oggi</strong><span>Spesso pronta in giornata, se ordini entro le {{ dati.ordini.ora_limite }}</span></li>
+    <li><strong>{{ (dati.prezzo_min + es120.prezzo)|euro }}</strong><span>120 pagine a colori, copertina rigida</span></li>
+  </ul>
   <p><a class="bottone" href="configura.html">Configura la tesi</a></p>
-
-  <h2>Ritiro gratuito, spesso in giornata</h2>
-  <p>Se l'ordine arriva entro le {{ dati.ordini.ora_limite }} di un giorno lavorativo, spesso la tesi è pronta il giorno stesso. Prima di pagare il configuratore ti mostra la data garantita, al più tardi {{ dati.ordini.giorni_massimi_lavorazione }} giorni lavorativi dopo. Orari della bottega: {{ dati.bottega.orari }}.</p>
-
-  <h2>Vieni a vedere i colori dal vivo</h2>
-  <p>Lo schermo non rende mai del tutto i colori. In bottega c'è il campionario delle copertine: puoi toccare i materiali e confrontarli, anche con il vestito della laurea.</p>
-
-  <h2>Quanto costa</h2>
-  <p>La copertina rigida parte da {{ dati.prezzo_min|euro }}; la stampa dipende dal numero di facciate e il colore costa come il bianco e nero. Una tesi di 120 pagine, anche tutta a colori, costa {{ (dati.prezzo_min + es120.prezzo)|euro }} con il ritiro in bottega. <a href="index.html#prezzi">Tutti i prezzi</a>.</p>
-
-  <h2>Un dubbio sul file?</h2>
-  <p>Passa in bottega o chiamaci allo <a href="tel:+390532208932">{{ dati.bottega.telefono }}</a>: lo guardiamo insieme prima di stampare.</p>
-
-  <h2>Dove siamo</h2>
-  <p>Volta la carta, {{ dati.bottega.indirizzo }}.<br><a href="https://www.google.com/maps/search/?api=1&amp;query=Volta+la+carta+Via+Voltapaletto+25+Ferrara" rel="noopener">Apri in Google Maps</a></p>
+  <h2>Tocca i colori dal vivo</h2>
+  <p>In bottega c'è il campionario. Porta anche il vestito.</p>
+  <h2>Dove e quando</h2>
+  <p>{{ dati.bottega.indirizzo }} · {{ dati.bottega.orari }} · <a href="tel:+390532208932">{{ dati.bottega.telefono }}</a><br><a href="https://www.google.com/maps/search/?api=1&amp;query=Volta+la+carta+Via+Voltapaletto+25+Ferrara" rel="noopener">Apri in Google Maps</a></p>
 </article>
 {% endblock %}
