@@ -23,6 +23,7 @@ Una decisione = un file numerato, creato con `python3 strumenti/nuova-decisione.
 | [0006](0006-colori-del-vestito-gratis-colore-esatto-a-10-euro-a-copia.md) | Colori del vestito gratis, colore esatto a 10 euro a copia | accettato | 2026-11-09 |
 | [0007](0007-regole-del-colore-esatto-confermate-dal-titolare.md) | Regole del colore esatto confermate dal titolare | accettato | 2026-11-09 |
 | [0008](0008-stile-grafico-legatoria-e-sito-pensato-per-ferrara-senza-pub.md) | Stile grafico Legatoria e sito pensato per Ferrara senza pubblicità | accettato | 2026-11-09 |
+| [0009](0009-aspetto-contemporaneo-del-sito.md) | Aspetto contemporaneo del sito | proposto | 2026-11-09 |
 
 <!-- indice:fine -->
 

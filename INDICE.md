@@ -2,7 +2,7 @@
 
 <!-- Generato da strumenti/indici.py: le modifiche qui dentro vengono sovrascritte. -->
 
-15 documenti. Una riga per file: `percorso · titolo · stato · sintesi`.
+16 documenti. Una riga per file: `percorso · titolo · stato · sintesi`.
 Per cercare: `grep -i "parola" INDICE.md`, poi apri solo i file trovati.
 
 ## (radice)
@@ -23,5 +23,6 @@ Per cercare: `grep -i "parola" INDICE.md`, poi apri solo i file trovati.
 - docs/decisioni/0006-colori-del-vestito-gratis-colore-esatto-a-10-euro-a-copia.md · Colori del vestito gratis, colore esatto a 10 euro a copia · accettato · Lo strumento dei colori del vestito è gratis; si paga 10 euro in più a copia solo per la copertina stampata nel colore esatto.
 - docs/decisioni/0007-regole-del-colore-esatto-confermate-dal-titolare.md · Regole del colore esatto confermate dal titolare · accettato · Copertina stampata e plastificata; scritta stampata solo se leggibile; 10 euro anche per la sola scritta; base Opaco per ora.
 - docs/decisioni/0008-stile-grafico-legatoria-e-sito-pensato-per-ferrara-senza-pub.md · Stile grafico Legatoria e sito pensato per Ferrara senza pubblicità · accettato · Si adotta lo stile Legatoria; il sito punta sulla clientela di Ferrara e dintorni, senza pubblicità, con un'esperienza migliore dei concorrenti nazion
+- docs/decisioni/0009-aspetto-contemporaneo-del-sito.md · Aspetto contemporaneo del sito · proposto · Il sito passa a un aspetto attuale: Bricolage Grotesque per i titoli, angoli arrotondati, palco della copertina che prende il colore scelto; il caratt
 - docs/decisioni/README.md · Decisioni del progetto · attivo · Una decisione = un file numerato, creato con python3 strumenti/nuova-decisione.py "Titolo".
 - docs/migliorie.md · Migliorie per il nuovo sito (solo traffico organico) · proposto · Elenco prioritizzato: SEO tecnica, contenuti, conversione, fiducia, recensioni, gestione, conformità 2026, integrazione con Registro VLC e Konga.
