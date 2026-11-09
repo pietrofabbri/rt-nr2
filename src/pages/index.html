@@ -36,6 +36,37 @@
   </div>
 </section>
 
+{% set es120 = dati.stampa | selectattr("da", "le", 120) | selectattr("a", "ge", 120) | first %}
+<section class="sezione perche" id="perche">
+  <h2>Perché da noi</h2>
+  <dl class="perche__lista">
+    <div>
+      <dt>Il colore costa come il bianco e nero</dt>
+      <dd>Molti servizi online fanno pagare ogni pagina a colori. Da noi una tesi di 120 pagine, anche tutta a colori, costa {{ (dati.prezzo_min + es120.prezzo)|euro }} con la copertina rigida Opaco.</dd>
+    </div>
+    <div>
+      <dt>La ritiri in bottega, gratis</dt>
+      <dd>In via Voltapaletto 25, nel centro di Ferrara. Se ordini entro le 12 spesso è pronta in giornata, e il configuratore ti dice la data garantita.</dd>
+    </div>
+    <div>
+      <dt>Fatta a mano, controllata da persone</dt>
+      <dd>Prima di stampare guardiamo il tuo file, e prima di consegnarla controlliamo ogni tesi. Il controllo è compreso nel prezzo.</dd>
+    </div>
+    <div>
+      <dt>La vedi prima di ordinare</dt>
+      <dd>Sfogli tutte le pagine del tuo PDF, vedi la copertina con il tuo titolo e sai subito prezzo e data di spedizione.</dd>
+    </div>
+    <div>
+      <dt>Nel colore del tuo vestito</dt>
+      <dd>Da uno screenshot del vestito troviamo i suoi colori e le copertine più vicine. Se vuoi proprio quel colore, la stampiamo su misura.</dd>
+    </div>
+    <div>
+      <dt>Se sbagliamo noi, la rifacciamo gratis</dt>
+      <dd>Rileghiamo in via Voltapaletto dal {{ dati.bottega.dal }}: tra i nostri lavori ci sono un messale per Papa Francesco e un volume donato al Presidente Mattarella. Se una tesi esce male per colpa nostra, la rifacciamo senza costi.</dd>
+    </div>
+  </dl>
+</section>
+
 <section class="sezione" id="come-funziona">
   <h2>Come funziona</h2>
   <ol class="passi">

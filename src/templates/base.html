@@ -9,6 +9,23 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "rilegaretesi, Volta la carta",
+  "legalName": "{{ dati.bottega.ragione_sociale }}",
+  "description": "Stampa e rilegatura artigianale di tesi di laurea a Ferrara, con ritiro in bottega e spedizione in tutta Italia.",
+  "url": "https://rilegaretesi.it/",
+  "telephone": "+39 0532 208932",
+  "email": "{{ dati.bottega.email }}",
+  "vatID": "IT{{ dati.bottega.piva }}",
+  "foundingDate": "{{ dati.bottega.dal }}",
+  "priceRange": "€€",
+  "address": { "@type": "PostalAddress", "streetAddress": "Via Voltapaletto 25", "addressLocality": "Ferrara", "addressRegion": "FE", "addressCountry": "IT" },
+  "areaServed": ["Ferrara", "Italia"]
+}
+</script>
 {% block head %}{% endblock %}
 </head>
 <body>
@@ -27,6 +44,7 @@
     <nav class="menu" aria-label="Principale">
       <a href="index.html#come-funziona">Come funziona</a>
       <a href="index.html#prezzi">Prezzi</a>
+      <a href="rilegatura-tesi-ferrara.html"{% if pagina == 'rilegatura-tesi-ferrara' %} aria-current="page"{% endif %}>Ritiro a Ferrara</a>
       <a href="domande.html"{% if pagina == 'domande' %} aria-current="page"{% endif %}>Domande</a>
       <a href="contatti.html"{% if pagina == 'contatti' %} aria-current="page"{% endif %}>Contatti</a>
     </nav>
@@ -48,6 +66,7 @@
       <p><a href="tel:+390532208932">0532 208932</a><br><a href="mailto:info@rilegaretesi.it">info@rilegaretesi.it</a><br>Orari della bottega: {{ dati.bottega.orari }}</p>
     </div>
     <nav aria-label="Informazioni">
+      <a href="rilegatura-tesi-ferrara.html">Rilegatura tesi a Ferrara</a>
       <a href="spedizioni.html">Spedizioni</a>
       <a href="domande.html">Domande frequenti</a>
       <a href="chi-siamo.html">Chi siamo</a>

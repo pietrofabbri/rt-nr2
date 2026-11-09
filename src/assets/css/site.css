@@ -531,3 +531,11 @@ input[type="date"] { font: inherit; color: var(--ink); background: var(--paper);
   .configura .conto__totale strong { font-size: 1.6rem; }
   .configura__passi h1 { font-size: 1.7rem; margin-bottom: 1rem; }
 }
+
+/* Perché da noi */
+.perche__lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3rem; margin: 1rem 0 0; }
+.perche__lista div { padding: 1.25rem 0; border-top: 1px solid var(--line); }
+.perche__lista dt { font-family: var(--display); font-size: 1.45rem; line-height: 1.2; margin-bottom: .45rem; }
+.perche__lista dd { margin: 0; color: var(--muted); max-width: 34rem; }
+@media (max-width: 760px) { .perche__lista { grid-template-columns: minmax(0, 1fr); } }
+.testo--ferrara .bottone { margin-bottom: .5rem; }
