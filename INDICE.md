@@ -2,7 +2,7 @@
 
 <!-- Generato da strumenti/indici.py: le modifiche qui dentro vengono sovrascritte. -->
 
-13 documenti. Una riga per file: `percorso · titolo · stato · sintesi`.
+15 documenti. Una riga per file: `percorso · titolo · stato · sintesi`.
 Per cercare: `grep -i "parola" INDICE.md`, poi apri solo i file trovati.
 
 ## (radice)
@@ -14,6 +14,7 @@ Per cercare: `grep -i "parola" INDICE.md`, poi apri solo i file trovati.
 - docs/README.md · Documentazione del progetto · attivo · Tutti i documenti del progetto. La tabella si aggiorna da sola.
 - docs/abbinamento-vestito.md · Colori del vestito e colore esatto · attivo · Come lo strumento trova i colori del vestito, come si usano per copertina e scritta, e come funziona il colore esatto a pagamento.
 - docs/architettura-produzione.md · Architettura di produzione proposta (Cloudflare + Stripe) · proposto · Proposta: pagine statiche Astro su Cloudflare Workers, PDF su R2, ordini su D1, Stripe Checkout, Resend; costo fisso 0–55 €/anno.
+- docs/concorrenza.md · Concorrenza nella stampa e rilegatura delle tesi · attivo · Cosa offrono i servizi online italiani e le copisterie di Ferrara, dove siamo più forti e più deboli, e cosa ne deriva per il sito.
 - docs/decisioni/0001-nuovo-sito-separato-staging-su-github-pages.md · Nuovo sito separato, staging su GitHub Pages · accettato · Il sito attuale non si tocca; il nuovo si costruisce a parte e si pubblica in staging su GitHub Pages.
 - docs/decisioni/0002-sito-statico-con-astro-e-catalogo-dal-registro-vlc.md · Sito statico con Astro e catalogo dal Registro VLC · superato · Proposta: sito statico Astro, catalogo letto dal Registro VLC, pagamenti e caricamento PDF in una fase successiva.
 - docs/decisioni/0003-sito-statico-in-html-generato-con-python.md · Sito statico in HTML generato con Python · proposto · Pagine HTML generate da un piccolo script Python (Jinja), catalogo in JSON copiato dal Registro VLC; pubblicazione automatica su GitHub Pages.
@@ -21,5 +22,6 @@ Per cercare: `grep -i "parola" INDICE.md`, poi apri solo i file trovati.
 - docs/decisioni/0005-repository-spostata-in-pietrofabbri-rt-nr2.md · Repository spostata in pietrofabbri/rt-nr2 · accettato · Il codice del sito passa da voltalacarta/rt2 a pietrofabbri/rt-nr2; lo staging va su pietrofabbri.github.io/rt-nr2.
 - docs/decisioni/0006-colori-del-vestito-gratis-colore-esatto-a-10-euro-a-copia.md · Colori del vestito gratis, colore esatto a 10 euro a copia · accettato · Lo strumento dei colori del vestito è gratis; si paga 10 euro in più a copia solo per la copertina stampata nel colore esatto.
 - docs/decisioni/0007-regole-del-colore-esatto-confermate-dal-titolare.md · Regole del colore esatto confermate dal titolare · accettato · Copertina stampata e plastificata; scritta stampata solo se leggibile; 10 euro anche per la sola scritta; base Opaco per ora.
+- docs/decisioni/0008-stile-grafico-legatoria-e-sito-pensato-per-ferrara-senza-pub.md · Stile grafico Legatoria e sito pensato per Ferrara senza pubblicità · accettato · Si adotta lo stile Legatoria; il sito punta sulla clientela di Ferrara e dintorni, senza pubblicità, con un'esperienza migliore dei concorrenti nazion
 - docs/decisioni/README.md · Decisioni del progetto · attivo · Una decisione = un file numerato, creato con python3 strumenti/nuova-decisione.py "Titolo".
 - docs/migliorie.md · Migliorie per il nuovo sito (solo traffico organico) · proposto · Elenco prioritizzato: SEO tecnica, contenuti, conversione, fiducia, recensioni, gestione, conformità 2026, integrazione con Registro VLC e Konga.
