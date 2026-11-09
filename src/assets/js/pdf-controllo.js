@@ -89,9 +89,56 @@ async function analizza(file, avanzamento) {
     p.cleanup();
     if (avanzamento && (i % 10 === 0 || i === n)) avanzamento(i, n);
   }
-  await doc.destroy();
+  if (ultimo) ultimo.destroy();
+  ultimo = doc;
+  turno++;
   return esito;
 }
 
-window.ControlloPDF = { analizza };
+// Sfoglia: miniature di tutte le pagine, una dopo l'altra, e conteggio delle pagine a colori.
+let ultimo = null;
+let turno = 0;
+function aColori(ctx, w, h) {
+  const px = ctx.getImageData(0, 0, w, h).data;
+  let colorati = 0;
+  for (let i = 0; i < px.length; i += 4) {
+    const max = Math.max(px[i], px[i + 1], px[i + 2]), min = Math.min(px[i], px[i + 1], px[i + 2]);
+    if (max - min > 45) colorati++;
+  }
+  return colorati / (px.length / 4) > 0.002;
+}
+
+async function sfoglia(contenitore, bianche, suPagina) {
+  const mio = turno;
+  const doc = ultimo;
+  if (!doc) return 0;
+  let colori = 0;
+  for (let i = 1; i <= doc.numPages; i++) {
+    if (mio !== turno) return null;
+    const p = await doc.getPage(i);
+    const v = p.getViewport({ scale: 1 });
+    const scala = 96 / v.width;
+    const fig = document.createElement("figure");
+    fig.className = "sfoglia__pagina" + (bianche.includes(i) ? " sfoglia__pagina--bianca" : "");
+    const tela = document.createElement("canvas");
+    tela.width = Math.round(v.width * scala);
+    tela.height = Math.round(v.height * scala);
+    const ctx = tela.getContext("2d", { willReadFrequently: true });
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, tela.width, tela.height);
+    await p.render({ canvasContext: ctx, viewport: p.getViewport({ scale: scala }) }).promise;
+    p.cleanup();
+    const colore = aColori(ctx, tela.width, tela.height);
+    if (colore) { colori++; fig.classList.add("sfoglia__pagina--colori"); }
+    const cap = document.createElement("figcaption");
+    cap.textContent = i;
+    fig.appendChild(tela);
+    fig.appendChild(cap);
+    contenitore.appendChild(fig);
+    if (suPagina) suPagina(i, doc.numPages, colori);
+  }
+  return colori;
+}
+
+window.ControlloPDF = { analizza, sfoglia };
 window.dispatchEvent(new Event("controllo-pdf-pronto"));

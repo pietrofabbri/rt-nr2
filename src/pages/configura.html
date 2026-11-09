@@ -28,9 +28,19 @@
 
   <form class="configura__passi" id="configuratore" novalidate>
     <h1>Configura la tua tesi</h1>
+    <nav class="tappe" aria-label="Passi dell'ordine"><ol>
+      <li><button type="button" data-vai="1" aria-current="step"><span>1</span> La tesi</button></li>
+      <li><button type="button" data-vai="2"><span>2</span> Copertina</button></li>
+      <li><button type="button" data-vai="3"><span>3</span> Scritta</button></li>
+      <li><button type="button" data-vai="4"><span>4</span> Stampa</button></li>
+      <li><button type="button" data-vai="5"><span>5</span> Consegna</button></li>
+      <li><button type="button" data-vai="6"><span>6</span> Riepilogo</button></li>
+    </ol></nav>
 
+    <section class="tappa" data-tappa="1" aria-labelledby="tappa-1">
+      <h2 class="tappa__titolo" id="tappa-1"><span class="tappa__n">1 di 6</span> La tesi</h2>
     <fieldset class="passo">
-      <legend><span class="passo__n">1</span> Tipo di rilegatura</legend>
+      <legend>Tipo di rilegatura</legend>
       <div class="scelte scelte--tipo">
         {% for t in dati.tipologie %}
         <label class="scelta{% if not t.attiva %} scelta--spenta{% endif %}">
@@ -43,7 +53,7 @@
     </fieldset>
 
     <fieldset class="passo">
-      <legend><span class="passo__n">2</span> Il PDF della tesi</legend>
+      <legend>Il PDF della tesi</legend>
       <p class="passo__aiuto">Scegli il file: contiamo le facciate e controlliamo che sia pronto per la stampa. Il file resta sul tuo dispositivo finché non confermi l'ordine.</p>
       <label class="caricamento" id="caricamento">
         <input type="file" id="pdf" accept="application/pdf,.pdf">
@@ -57,6 +67,11 @@
           <ul class="esito__controlli" id="esito-controlli"></ul>
         </div>
       </div>
+      <div class="sfoglia-box" id="sfoglia-box" hidden>
+        <p class="sfoglia__titolo"><strong>Sfoglia la tua tesi</strong> <span id="sfoglia-stato"></span></p>
+        <div class="sfoglia" id="sfoglia" tabindex="0" aria-label="Le pagine della tua tesi"></div>
+        <p class="sfoglia__legenda"><span class="sfoglia__chiave sfoglia__chiave--colori"></span> pagina a colori, stesso prezzo del bianco e nero <span class="sfoglia__chiave sfoglia__chiave--bianca"></span> pagina bianca</p>
+      </div>
       <div class="campi campi--stampa">
         <label>Facciate del PDF
           <input type="number" id="facciate" inputmode="numeric" min="1" max="{{ (dati.stampa|last).a }}" placeholder="Es. 120" aria-describedby="facciate-aiuto">
@@ -64,9 +79,14 @@
         </label>
       </div>
     </fieldset>
-
+      <div class="tappa__nav">
+        <button type="button" class="bottone" data-avanti>Avanti: Copertina</button>
+      </div>
+    </section>
+    <section class="tappa" data-tappa="2" aria-labelledby="tappa-2" hidden>
+      <h2 class="tappa__titolo" id="tappa-2"><span class="tappa__n">2 di 6</span> Copertina</h2>
     <fieldset class="passo">
-      <legend><span class="passo__n">3</span> Copertina</legend>
+      <legend class="nascosto">Copertina</legend>
       <p class="passo__aiuto">Avorio e bordeaux sono i più scelti. Molti abbinano il colore al vestito della laurea. Per vedere i colori dal vivo, il campionario è in bottega.</p>
       <p class="hex-stato" id="hex-stato" hidden>
         <span class="hex-stato__campioni"><span id="hex-stato-cop"></span><span id="hex-stato-scr"></span></span>
@@ -175,9 +195,15 @@
       </div>
       <p class="vuoto" id="griglia-vuota" hidden>Nessuna copertina con questi filtri. <button type="button" class="collegamento" id="azzera-filtri">Mostra tutte</button></p>
     </fieldset>
-
+      <div class="tappa__nav">
+        <button type="button" class="bottone bottone--secondario" data-indietro>Indietro</button>
+        <button type="button" class="bottone" data-avanti>Avanti: Scritta</button>
+      </div>
+    </section>
+    <section class="tappa" data-tappa="3" aria-labelledby="tappa-3" hidden>
+      <h2 class="tappa__titolo" id="tappa-3"><span class="tappa__n">3 di 6</span> Scritta</h2>
     <fieldset class="passo">
-      <legend><span class="passo__n">4</span> Scritta e decoro</legend>
+      <legend>Scritta e decoro</legend>
       <div class="scelte scelte--foil">
         {% for t in dati.colori_testo %}
         <label class="scelta scelta--foil">
@@ -197,7 +223,7 @@
     </fieldset>
 
     <fieldset class="passo">
-      <legend><span class="passo__n">5</span> Anteprima della scritta</legend>
+      <legend>Anteprima della scritta</legend>
       <p class="passo__aiuto">In copertina stampiamo il frontespizio del tuo PDF, sistemando noi gli allineamenti. Qui puoi vedere l'effetto.</p>
       <div class="campi">
         <label>Università<input type="text" data-anteprima="ateneo" placeholder="Università degli Studi" maxlength="60"></label>
@@ -206,9 +232,15 @@
         <label>Anno accademico<input type="text" data-anteprima="anno" placeholder="Anno accademico 2025/2026" maxlength="40"></label>
       </div>
     </fieldset>
-
+      <div class="tappa__nav">
+        <button type="button" class="bottone bottone--secondario" data-indietro>Indietro</button>
+        <button type="button" class="bottone" data-avanti>Avanti: Stampa</button>
+      </div>
+    </section>
+    <section class="tappa" data-tappa="4" aria-labelledby="tappa-4" hidden>
+      <h2 class="tappa__titolo" id="tappa-4"><span class="tappa__n">4 di 6</span> Stampa</h2>
     <fieldset class="passo">
-      <legend><span class="passo__n">6</span> Stampa</legend>
+      <legend class="nascosto">Stampa</legend>
       <p class="passo__aiuto">A colori o in bianco e nero, il prezzo è lo stesso.</p>
       <div class="campi campi--stampa">
         <div class="scelte scelte--due" role="radiogroup" aria-label="Tipo di stampa">
@@ -224,9 +256,15 @@
         </label>
       </div>
     </fieldset>
-
+      <div class="tappa__nav">
+        <button type="button" class="bottone bottone--secondario" data-indietro>Indietro</button>
+        <button type="button" class="bottone" data-avanti>Avanti: Consegna</button>
+      </div>
+    </section>
+    <section class="tappa" data-tappa="5" aria-labelledby="tappa-5" hidden>
+      <h2 class="tappa__titolo" id="tappa-5"><span class="tappa__n">5 di 6</span> Consegna</h2>
     <fieldset class="passo">
-      <legend><span class="passo__n">7</span> Consegna</legend>
+      <legend class="nascosto">Consegna</legend>
       <div class="campi campi--stampa">
         <label>Giorno della laurea
           <input type="date" id="laurea" aria-describedby="laurea-aiuto">
@@ -244,9 +282,16 @@
       </div>
       <p class="data-consegna" id="data-consegna" aria-live="polite"></p>
     </fieldset>
-
+      <div class="tappa__nav">
+        <button type="button" class="bottone bottone--secondario" data-indietro>Indietro</button>
+        <button type="button" class="bottone" data-avanti>Avanti: Riepilogo</button>
+      </div>
+    </section>
+    <section class="tappa" data-tappa="6" aria-labelledby="tappa-6" hidden>
+      <h2 class="tappa__titolo" id="tappa-6"><span class="tappa__n">6 di 6</span> Riepilogo e pagamento</h2>
+      <div class="riepilogo-ordine" id="riepilogo-ordine"></div>
     <fieldset class="passo">
-      <legend><span class="passo__n">8</span> Fattura e pagamento</legend>
+      <legend class="nascosto">Fattura e pagamento</legend>
       <label class="interruttore">
         <input type="checkbox" id="vuole-fattura">
         <span>Mi serve la fattura (azienda, ente o professionista)</span>
@@ -262,11 +307,15 @@
       <p class="garanzia">Controlliamo ogni tesi prima di spedirla. Se l'errore è nostro, la rifacciamo gratis.</p>
       {% if staging %}<p class="avviso" id="avviso-staging" hidden>In questa versione di prova gli ordini non sono attivi: niente viene caricato né addebitato.</p>{% endif %}
     </fieldset>
+      <div class="tappa__nav">
+        <button type="button" class="bottone bottone--secondario" data-indietro>Indietro</button>
+      </div>
+    </section>
   </form>
 </div>
 <div class="barra-totale">
   <p><span>Totale</span> <strong id="barra-totale">—</strong></p>
-  <a class="bottone bottone--piccolo" href="#ordina">Vai all'ordine</a>
+  <button type="button" class="bottone bottone--piccolo" id="barra-avanti">Avanti</button>
 </div>
 {% endblock %}
 
