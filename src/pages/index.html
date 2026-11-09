@@ -8,43 +8,53 @@
 {% block contenuto %}
 <section class="apertura">
   <div class="apertura__testo">
-    <h1>La tua tesi, <br>rilegata a mano.</h1>
-    <p class="apertura__sotto">Carichi il PDF, scegli la copertina. Il resto lo facciamo noi, in bottega a Ferrara.</p>
+    <p class="apertura__dove">Legatoria a Ferrara dal {{ dati.bottega.dal }}</p>
+    <h1>La tua tesi, rilegata a mano.</h1>
+    <p class="apertura__sotto">Carichi il PDF, scegli la copertina e la ritiri in bottega o la ricevi a casa. Da {{ dati.prezzo_min|euro }} a copia, il colore senza sovrapprezzo.</p>
     <div class="apertura__azioni">
-      <a class="bottone" href="configura.html">Configura la tesi</a>
+      <a class="bottone bottone--grande" href="configura.html">Configura la tesi</a>
       <a class="collegamento" href="#prezzi">Vedi i prezzi</a>
     </div>
     <ul class="apertura__fatti">
-      <li>★ {{ dati.recensioni.media }} su {{ dati.recensioni.fonte }}</li>
-      <li>Colore al prezzo del b/n</li>
-      <li>Ritiro gratis a Ferrara</li>
+      <li><span class="stelle" aria-hidden="true">★★★★★</span> {{ dati.recensioni.media }} su {{ dati.recensioni.fonte }}</li>
+      <li>Spesso pronta in giornata</li>
+      <li>Ritiro gratis</li>
     </ul>
   </div>
 
-  <div class="apertura__libro">
+  <div class="palco" id="palco" style="--tinta: {{ cop.colore }}">
     {{ copertina(cop, id="libro-home", grande=true) }}
-    <div class="campioni" role="radiogroup" aria-label="Prova una copertina">
-      {% for codice in scelte %}
-        {% set c = dati.copertine | selectattr("codice", "equalto", codice) | first %}
-        <button type="button" class="campione" role="radio" aria-checked="{{ 'true' if codice == cop.codice else 'false' }}"
-          data-codice="{{ c.codice }}" data-nome="{{ c.nome }}" data-colore="{{ c.colore }}" data-finitura="{{ c.finitura|lower|replace(' ', '-') }}" data-prezzo="{{ c.prezzo|euro }}"
-          style="--cop: {{ c.colore }}" aria-label="{{ c.nome }}"></button>
-      {% endfor %}
+    <div class="palco__scegli">
+      <p class="palco__titolo">Prova un colore</p>
+      <div class="campioni" role="radiogroup" aria-label="Prova una copertina">
+        {% for codice in scelte %}
+          {% set c = dati.copertine | selectattr("codice", "equalto", codice) | first %}
+          <button type="button" class="campione" role="radio" aria-checked="{{ 'true' if codice == cop.codice else 'false' }}"
+            data-codice="{{ c.codice }}" data-nome="{{ c.nome }}" data-colore="{{ c.colore }}" data-finitura="{{ c.finitura|lower|replace(' ', '-') }}" data-prezzo="{{ c.prezzo|euro }}"
+            style="--cop: {{ c.colore }}" aria-label="{{ c.nome }}"></button>
+        {% endfor %}
+      </div>
+      <a class="collegamento collegamento--piccolo" id="vai-configura" href="configura.html?copertina={{ cop.codice }}">Tutte le {{ dati.copertine|length }} copertine</a>
     </div>
-    <a class="collegamento collegamento--piccolo" id="vai-configura" href="configura.html?copertina={{ cop.codice }}">Tutte le {{ dati.copertine|length }} copertine</a>
   </div>
 </section>
 
 {% set es120 = dati.stampa | selectattr("da", "le", 120) | selectattr("a", "ge", 120) | first %}
-<section class="perche" id="perche">
-  <h2 class="perche__titolo">Sei motivi per scegliere noi</h2>
-  <ul class="numeri">
-    <li><strong>{{ (dati.prezzo_min + es120.prezzo)|euro }}</strong><span>120 pagine a colori. <br>Il colore costa come il bianco e nero.</span></li>
-    <li><strong>0 €</strong><span>Ritiro in bottega, <br>in centro a Ferrara.</span></li>
-    <li><strong>Oggi</strong><span>Ordini entro le {{ dati.ordini.ora_limite }}?<br>Spesso è pronta in giornata.</span></li>
-    <li><strong>A mano</strong><span>Ogni file e ogni tesi <br>controllati da una persona.</span></li>
-    <li><strong>Su misura</strong><span>La copertina nel colore <br>del tuo vestito.</span></li>
-    <li><strong>{{ dati.bottega.dal }}</strong><span>Legatoria artigiana. Se sbagliamo, <br>la rifacciamo gratis.</span></li>
+<section class="sezione perche" id="perche">
+  <div class="perche__testa">
+    <h2>Perché sceglierci</h2>
+    <div class="cartellino">
+      <span>Tesi di 120 pagine a colori</span>
+      <strong>{{ (dati.prezzo_min + es120.prezzo)|euro }}</strong>
+      <span>copertina rigida compresa</span>
+    </div>
+  </div>
+  <ul class="perche__lista">
+    <li><h3>Il colore costa come il bianco e nero</h3><p>Nessun sovrapprezzo per le pagine a colori.</p></li>
+    <li><h3>Ritiro gratis a Ferrara</h3><p>In via Voltapaletto 25, spesso già in giornata.</p></li>
+    <li><h3>Controllata da una persona</h3><p>Guardiamo il tuo file prima di stampare, e ogni tesi prima di consegnarla.</p></li>
+    <li><h3>In tinta con il tuo vestito</h3><p>Copertina e scritta nei colori del tuo abito.</p></li>
+    <li><h3>Se sbagliamo noi, la rifacciamo</h3><p>Gratis, senza discutere.</p></li>
   </ul>
 </section>
 
@@ -71,7 +81,7 @@
   </div>
 </section>
 
-<section class="sezione sezione--bottega">
+<section class="sezione">
   <div class="bottega">
     <div class="bottega__testo">
       <h2>Una legatoria vera, dal {{ dati.bottega.dal }}</h2>
@@ -134,8 +144,10 @@
 </section>
 
 <section class="chiusura">
+  <div class="chiusura__in">
   <h2>La tesi è finita. Al resto pensiamo noi.</h2>
-  <a class="bottone bottone--chiaro" href="configura.html">Configura la tesi</a>
+  <a class="bottone bottone--chiaro bottone--grande" href="configura.html">Configura la tesi</a>
+  </div>
 </section>
 {% endblock %}
 
